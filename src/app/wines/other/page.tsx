@@ -1,0 +1,2 @@
+import { WineListPage } from "@/components/wine-list-page";import { otherWines } from "@/lib/wine-categories";
+export const metadata={title:"Other Wines"};export default function OtherWinesPage(){return <WineListPage eyebrow="Wines · Other" title="Other Wines" description="Browse rosé, orange, sparkling, dessert, and fortified wine styles offered by independent sellers." wines={otherWines} tone="other"/>}

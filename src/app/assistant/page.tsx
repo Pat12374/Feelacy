@@ -1,0 +1,4 @@
+import { auth } from "@/lib/auth";
+import { MarketplaceAssistant } from "@/components/marketplace-assistant";
+export const metadata={title:"Marketplace AI Assistant"};
+export default async function AssistantPage(){const session=await auth();return <div className="wt-container py-10"><p className="text-xs uppercase tracking-[.16em] text-[var(--copper)]">AI-powered marketplace help</p><h1 className="mt-2 font-sans text-4xl font-semibold">WineTreff AI Assistant</h1><p className="mb-8 mt-2 max-w-3xl text-[var(--ink-soft)]">Search live offers conversationally, understand WineTreff policies, or prepare seller listing drafts—all through one permission-aware assistant.</p>{session?.user?<MarketplaceAssistant sellerEnabled={["SELLER","ADMIN"].includes(session.user.role)}/>:<div className="rounded-2xl border border-[var(--line)] bg-white/50 p-6">Please <a className="font-semibold underline" href="/login">sign in</a> to use the assistant.</div>}</div>}
