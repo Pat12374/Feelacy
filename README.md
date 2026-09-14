@@ -120,15 +120,15 @@ Email
 
 Buyer
 
-buyer@feelacy.local
+buyer@winebloom.com
 
 Seller
 
-seller@feelacy.local
+seller@winebloom.com
 
 Administrator
 
-admin@feelacy.local
+admin@winebloom.com
 
 With ALLOW_DEMO_CHECKOUT=true and no Stripe keys, checkout creates a local paid order and uses the estimated processor fee as the recorded fee. This path is disabled unconditionally in production.
 
