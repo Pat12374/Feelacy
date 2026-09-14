@@ -408,7 +408,7 @@ Fee rules
 
 Marketplace assistant
 
-FEELACY Express
+Winebloom Express
 
 Safety and compliance notes
 
