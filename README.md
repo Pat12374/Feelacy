@@ -1,8 +1,8 @@
-FEELACY
+WineBloom
 
-FEELACY is a fixed-price marketplace for wines, spirits, rare bottles, gifts, flowers, accessories, and beverage collectibles. It provides product discovery, seller storefronts, checkout, seller tools, age and identity verification, and marketplace records.
+WineBloom is a fixed-price marketplace for wines, spirits, rare bottles, gifts, flowers, accessories, and beverage collectibles. It provides product discovery, seller storefronts, checkout, seller tools, age and identity verification, and marketplace records.
 
-FEELACY is not a fulfillment provider. Sellers remain responsible for packing, shipping, tracking, delivery communication, and compliance with the laws that apply to their sales.
+WineBloom is not a fulfillment provider. Sellers remain responsible for packing, shipping, tracking, delivery communication, and compliance with the laws that apply to their sales.
 
 What is implemented
 
@@ -28,7 +28,7 @@ Welcome and password-reset email through Resend, with a local development outbox
 
 Optional AI marketplace assistant with a deterministic local fallback
 
-FEELACY Express delivery domain, admin controls, webhook handling, and a built-in sandbox provider
+WineBloom Express delivery domain, admin controls, webhook handling, and a built-in sandbox provider
 
 English, Spanish, German, Chinese, French, Russian, Hindi, Portuguese, Bengali, and Italian UI messages
 
@@ -36,7 +36,7 @@ Saved searches, comparisons, regional hubs, promotional listings, and editorial 
 
 Commercial and fulfillment model
 
-Buyers pay the displayed product price, shipping, and applicable tax or duties. FEELACY does not add a buyer commission or marketplace premium.
+Buyers pay the displayed product price, shipping, and applicable tax or duties. WineBloom does not add a buyer commission or marketplace premium.
 
 Seller plan
 
@@ -68,7 +68,7 @@ From €399
 
 Negotiated 3.5%–4.5%
 
-Payment-processing costs are deducted from seller proceeds and recorded separately from FEELACY commission. See docs/FEES.md for the calculation rules.
+Payment-processing costs are deducted from seller proceeds and recorded separately from WineBloom commission. See docs/FEES.md for the calculation rules.
 
 Technology
 
@@ -370,7 +370,7 @@ Recovery job for expired checkout reservations
 
 Payments and webhooks
 
-Production checkout uses direct charges on a seller's Stripe Connect Express account. FEELACY's commission is the Stripe application fee; Stripe processing costs remain seller-side and are finalized from the balance transaction.
+Production checkout uses direct charges on a seller's Stripe Connect Express account. WineBloom's commission is the Stripe application fee; Stripe processing costs remain seller-side and are finalized from the balance transaction.
 
 Configure the Stripe endpoint at /api/webhooks/stripe for platform and connected-account events. The required event list is maintained in docs/OPERATIONS.md. The handler validates signatures, account and order bindings, currency, amounts, and webhook idempotency before changing order state.
 
