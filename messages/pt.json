@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "WineTreff",
+    "brand": "WineBloom",
     "search": "Pesquisar",
     "sell": "Vender",
     "fees": "Taxas",
@@ -29,11 +29,11 @@
     "becomeSeller": "Torne-se vendedor"
   },
   "footer": {
-    "tagline": "Marketplace de preço fixo para vinhos, destilados, garrafas raras e colecionáveis. Compradores nunca pagam comissões WineTreff.",
-    "copyright": "© {year} WineTreff. Apenas 18+. Beba com responsabilidade."
+    "tagline": "Marketplace de preço fixo para vinhos, destilados, garrafas raras e colecionáveis. Compradores nunca pagam comissões WineBloom.",
+    "copyright": "© {year} WineBloom. Apenas 18+. Beba com responsabilidade."
   },
   "home": {
-    "welcome": "Bem-vindo ao WineTreff",
+    "welcome": "Bem-vindo ao WineBloom",
     "headline": "Garrafas com preço fixo de comerciantes confiáveis — vinhos, destilados, raridades, itens colecionáveis e presentes. Procure primeiro, compre o que quer, e os compradores pagam zero comissões.",
     "searchPlaceholder": "Pesquisar Riesling, Speyside, Pauillac…",
     "searchCta": "Pesquisar garrafas",
@@ -74,7 +74,7 @@
     "forgotPassword": "Esqueceu a palavra-passe?",
     "newHere": "Novo aqui?",
     "createAccount": "Criar uma conta",
-    "joinTitle": "Junte-se ao WineTreff",
+    "joinTitle": "Junte-se ao WineBloom",
     "joinHint": "Crie uma conta de comprador. Pode ativar vendas depois.",
     "name": "Nome",
     "alreadyRegistered": "Já registado?",
@@ -97,14 +97,14 @@
   },
   "age": {
     "title": "Tem idade legal?",
-    "body": "Deve ter pelo menos 18 anos para navegar e comprar álcool no WineTreff. Ao continuar, confirma a idade legal no seu país.",
+    "body": "Deve ter pelo menos 18 anos para navegar e comprar álcool no WineBloom. Ao continuar, confirma a idade legal no seu país.",
     "confirm": "Tenho 18 anos ou mais — entrar"
   },
   "listing": {
     "soldBy": "Vendido por",
     "shipping": "Envio {amount}",
     "taxesHint": "Impostos/taxas mostrados no checkout quando aplicável",
-    "noBuyerFees": "Compradores não pagam comissão nem taxas WineTreff.",
+    "noBuyerFees": "Compradores não pagam comissão nem taxas WineBloom.",
     "yourTotal": "O seu total hoje: {amount} (preço + envio)",
     "buyNow": "Comprar agora — preço fixo",
     "signInToBuy": "Entre para comprar",
@@ -159,23 +159,24 @@
     "pendingReview": "Enviar para revisão",
     "active": "Ativo (requer pagamentos)",
     "unlisted": "Não listado",
-    "openShop": "Abra a sua loja WineTreff",
-    "openShopHint": "Começa no plano Starter gratuito (10% de comissão). Atualize quando quiser. Compradores nunca pagam taxas WineTreff.",
+    "openShop": "Abra a sua loja WineBloom",
+    "openShopHint": "Começa no plano Starter gratuito (10% de comissão). Atualize quando quiser. Compradores nunca pagam taxas WineBloom.",
     "shopName": "Nome da loja",
     "bio": "Bio",
     "country": "Código do país",
     "createSeller": "Criar conta de vendedor",
     "planTitle": "Plano e taxas",
-    "planHint": "Assinatura híbrida + comissão. Custos de pagamento são deduzidos dos seus proventos e mostrados separadamente da comissão WineTreff. Compradores nunca pagam taxas do marketplace.",
+    "planHint": "Assinatura híbrida + comissão. Custos de pagamento são deduzidos dos seus proventos e mostrados separadamente da comissão WineBloom. Compradores nunca pagam taxas do marketplace.",
     "current": "Atual",
     "switchTo": "Mudar para {plan}",
-    "enterpriseContact": "Contacte o admin WineTreff para Enterprise.",
+    "enterpriseContact": "Contacte o admin WineBloom para Enterprise.",
     "settlementFormula": "Fórmula de liquidação",
-    "sellerHome": "Início do vendedor"
+    "sellerHome": "Início do vendedor",
+    "quantity": "Quantidade"
   },
   "fees": {
     "title": "Taxas",
-    "intro": "Regras claras para compradores e vendedores. O WineTreff não cobra aos compradores comissões, prémios, taxas de transação ou taxas básicas de IA.",
+    "intro": "Regras claras para compradores e vendedores. O WineBloom não cobra aos compradores comissões, prémios, taxas de transação ou taxas básicas de IA.",
     "buyersTitle": "O que os compradores pagam",
     "buyerPrice": "Preço do produto apresentado",
     "buyerShipping": "Envio indicado",
@@ -185,7 +186,7 @@
     "monthly": "Mensal",
     "commission": "Comissão",
     "processingTitle": "Processamento de pagamentos",
-    "processingBody": "Deduzido dos proventos do vendedor e divulgado separadamente da comissão WineTreff. Estimativa: 2,5% + €0,25 por pagamento. O ledger regista a cobrança real do fornecedor.",
+    "processingBody": "Deduzido dos proventos do vendedor e divulgado separadamente da comissão WineBloom. Estimativa: 2,5% + €0,25 por pagamento. O ledger regista a cobrança real do fornecedor.",
     "negotiated": "3,5%–4,5% negociado",
     "from": "a partir de {amount}"
   },
@@ -197,7 +198,7 @@
     "noPurchases": "Ainda sem compras."
   },
   "metadata": {
-    "title": "WineTreff — Garrafas finas, preço fixo",
+    "title": "WineBloom — Garrafas finas, preço fixo",
     "description": "Marketplace de vinhos, destilados, garrafas raras e colecionáveis. Compradores pagam apenas preço listado, envio e impostos aplicáveis."
   }
 }

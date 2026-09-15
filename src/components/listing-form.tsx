@@ -1,3 +1,4 @@
+import { fields as catalogFields } from "@/lib/catalog-import/product-ui";
 import { getTranslations } from "next-intl/server";
 import { upsertListingAction } from "@/lib/actions/marketplace";
 import { ListingImageInput } from "@/components/listing-image-input";
@@ -10,6 +11,10 @@ type ListingFormProps = {
     title: string;
     description: string;
     priceCents: number;
+    quantity: number;
+    imported?: boolean;
+    syncStatus?: string;
+    catalogProductJson?: string;
     shippingCents: number;
     categoryId?: string | null;
     regionId?: string | null;
@@ -44,10 +49,69 @@ export async function ListingForm({
   producers,
 }: ListingFormProps) {
   const t = await getTranslations("sell");
+  const catalogProduct: Record<string, string> = JSON.parse(
+    listing?.catalogProductJson || "{}",
+  );
 
   return (
     <form action={upsertListingAction} className="grid max-w-2xl gap-4">
       {listing && <input type="hidden" name="listingId" value={listing.id} />}
+      {listing?.imported && (
+        <details className="rounded-xl border border-[var(--line)] p-4">
+          <summary>Imported product details and seller claims</summary>
+          <input type="hidden" name="catalogDetailsPresent" value="true" />
+          <p className="my-3 text-sm">
+            Edit only facts you can support. Changing reviewed content requires
+            new compliance clearance.
+          </p>
+          {catalogFields
+            .filter(
+              (f) =>
+                ![
+                  "title",
+                  "description",
+                  "category",
+                  "price",
+                  "currency",
+                  "quantity",
+                  "imageUrls",
+                  "weightGrams",
+                  "lengthCm",
+                  "widthCm",
+                  "heightCm",
+                  "vintage",
+                  "abv",
+                  "bottleSizeMl",
+                  "condition",
+                ].includes(f),
+            )
+            .map((f) => (
+              <label className="wt-label my-2" key={f}>
+                {f}
+                <input
+                  className="wt-input"
+                  name={`catalog_${f}`}
+                  defaultValue={catalogProduct[f] || ""}
+                  maxLength={10000}
+                />
+              </label>
+            ))}
+        </details>
+      )}
+      {listing?.syncStatus && ["UNCERTAIN", "FAILED", "CONFLICT"].includes(listing.syncStatus) && <label className="flex gap-2 text-sm"><input type="checkbox" name="inventoryReconciled" />After disconnecting the source, I verified this quantity is available for WineBloom. Connected-store conflicts must be resolved in the connection review screen.</label>}
+      <label className="wt-label">
+        {t("quantity")}
+        <input
+          className="wt-input"
+          type="number"
+          name="quantity"
+          min="0"
+          max="1000000"
+          step="1"
+          required
+          defaultValue={listing?.quantity ?? 1}
+        />
+      </label>
       <label className="wt-label">
         {t("title")}
         <input
@@ -170,7 +234,9 @@ export async function ListingForm({
             className="wt-input"
             name="bottleSizeMl"
             type="number"
-            defaultValue={listing?.bottleSizeMl ?? "750"}
+            defaultValue={
+              listing?.bottleSizeMl ?? (listing?.imported ? "" : "750")
+            }
           />
         </label>
       </div>
@@ -180,7 +246,9 @@ export async function ListingForm({
           <input
             className="wt-input"
             name="condition"
-            defaultValue={listing?.condition ?? "Excellent"}
+            defaultValue={
+              listing?.condition ?? (listing?.imported ? "" : "Excellent")
+            }
           />
         </label>
         <label className="wt-label">
@@ -208,11 +276,73 @@ export async function ListingForm({
           defaultValue={listing?.tastingNotes ?? ""}
         />
       </label>
-      <ListingImageInput label={t("imageUrl")} defaultValue={listing?.images?.[0]?.url ?? ""} />
-      <fieldset className="rounded-2xl border border-[var(--line)] p-4"><legend className="px-2 font-semibold">Fulfillment requirements</legend><div className="grid gap-3 sm:grid-cols-2">
-        <Check name="containsAlcohol" label="Contains alcohol" checked={listing?.containsAlcohol ?? true}/><Check name="ageVerificationRequired" label="Age verification required" checked={listing?.ageVerificationRequired ?? true}/><Check name="signatureRequired" label="Signature required" checked={listing?.signatureRequired ?? true}/><Check name="fragile" label="Fragile" checked={listing?.fragile ?? true}/><Check name="localDeliveryPermitted" label="Permit local courier delivery" checked={listing?.localDeliveryPermitted ?? false}/>
-        <label className="wt-label">Declared value (EUR)<input className="wt-input" name="declaredValueEuros" type="number" min="0" step=".01" defaultValue={listing?.declaredValueCents != null ? listing.declaredValueCents/100 : ""}/></label><label className="wt-label">Weight (grams)<input className="wt-input" name="weightGrams" type="number" min="0" defaultValue={listing?.weightGrams ?? ""}/></label><label className="wt-label sm:col-span-2">Special handling<textarea className="wt-textarea" name="specialHandling" defaultValue={listing?.specialHandling ?? ""}/></label>
-      </div></fieldset>
+      <ListingImageInput
+        label={t("imageUrl")}
+        defaultValue={listing?.images?.[0]?.url ?? ""}
+      />
+      <fieldset className="rounded-2xl border border-[var(--line)] p-4">
+        <legend className="px-2 font-semibold">Fulfillment requirements</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Check
+            name="containsAlcohol"
+            label="Contains alcohol"
+            checked={listing?.containsAlcohol ?? true}
+          />
+          <Check
+            name="ageVerificationRequired"
+            label="Age verification required"
+            checked={listing?.ageVerificationRequired ?? true}
+          />
+          <Check
+            name="signatureRequired"
+            label="Signature required"
+            checked={listing?.signatureRequired ?? true}
+          />
+          <Check
+            name="fragile"
+            label="Fragile"
+            checked={listing?.fragile ?? true}
+          />
+          <Check
+            name="localDeliveryPermitted"
+            label="Permit local courier delivery"
+            checked={listing?.localDeliveryPermitted ?? false}
+          />
+          <label className="wt-label">
+            Declared value (EUR)
+            <input
+              className="wt-input"
+              name="declaredValueEuros"
+              type="number"
+              min="0"
+              step=".01"
+              defaultValue={
+                listing?.declaredValueCents != null
+                  ? listing.declaredValueCents / 100
+                  : ""
+              }
+            />
+          </label>
+          <label className="wt-label">
+            Weight (grams)
+            <input
+              className="wt-input"
+              name="weightGrams"
+              type="number"
+              min="0"
+              defaultValue={listing?.weightGrams ?? ""}
+            />
+          </label>
+          <label className="wt-label sm:col-span-2">
+            Special handling
+            <textarea
+              className="wt-textarea"
+              name="specialHandling"
+              defaultValue={listing?.specialHandling ?? ""}
+            />
+          </label>
+        </div>
+      </fieldset>
       <label className="wt-label">
         {t("status")}
         <select
@@ -233,4 +363,19 @@ export async function ListingForm({
   );
 }
 
-function Check({name,label,checked}:{name:string;label:string;checked:boolean}) { return <label className="flex items-center gap-2 text-sm"><input type="checkbox" name={name} defaultChecked={checked}/>{label}</label>; }
+function Check({
+  name,
+  label,
+  checked,
+}: {
+  name: string;
+  label: string;
+  checked: boolean;
+}) {
+  return (
+    <label className="flex items-center gap-2 text-sm">
+      <input type="checkbox" name={name} defaultChecked={checked} />
+      {label}
+    </label>
+  );
+}

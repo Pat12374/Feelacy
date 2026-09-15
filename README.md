@@ -1,87 +1,221 @@
-# WineTreff
+# WineBloom
 
-Fixed-price marketplace for wines, spirits, rare bottles, and beverage collectibles.
+WineBloom is a fixed-price marketplace for wines, spirits, rare bottles, gifts, flowers, accessories, and beverage collectibles. It provides product discovery, seller storefronts, checkout, seller tools, age and identity verification, and marketplace records.
 
-WineTreff does not provide fulfillment. Sellers are responsible for packing, shipping, tracking, delivery communication, and compliance for their sales.
+WineBloom is not a fulfillment provider. Sellers remain responsible for packing, shipping, tracking, delivery communication, and compliance with the laws that apply to their sales.
 
-Buyers pay only the displayed product price, stated shipping, and applicable taxes/duties — never WineTreff commissions or marketplace premiums. Sellers use a hybrid subscription + commission model (Starter free/10%, Merchant €49/7%, Professional €149/5%, Enterprise from €399 / negotiated 3.5%–4.5%). Payment-processing costs are deducted from seller proceeds and disclosed separately (estimate 2.5% + €0.25; actual provider fee recorded).
+## What is implemented
 
-See [docs/PLAN.md](docs/PLAN.md) and [docs/FEES.md](docs/FEES.md).
+- Search-first catalog with category, region, vintage, price, condition, bottle-size, and merchant filters
+- Fixed-price listings and public merchant storefronts
+- Buyer, seller, and administrator accounts using Auth.js credentials
+- Seller listing, order, payout, plan, and delivery-management screens
+- Stripe Connect Express checkout and seller onboarding
+- Stripe Billing support for paid seller plans
+- Stripe Identity age verification for alcohol purchases
+- Separate marketplace-commission and payment-processing settlement records
+- Optional S3/R2-compatible listing-media uploads
+- Welcome and password-reset email through Resend, with a local development outbox
+- Optional AI marketplace assistant with a deterministic local fallback
+- WineBloom Express delivery domain, admin controls, webhook handling, and a built-in sandbox provider
+- English, Spanish, German, Chinese, French, Russian, Hindi, Portuguese, Bengali, and Italian UI messages
 
-## Stack
+Saved searches, comparisons, regional hubs, promotional listings, and editorial content have schema support but are planned for a later product phase.
 
-- Next.js (App Router) + TypeScript + Tailwind CSS
-- PostgreSQL-ready Prisma schema (SQLite for local)
-- Auth.js (credentials)
-- Stripe Connect + Billing (optional; demo checkout without keys)
+## Commercial and fulfillment model
 
-## Quick start
+Buyers pay the displayed product price, shipping, and applicable tax or duties. WineBloom does not add a buyer commission or marketplace premium.
+
+| Seller plan | Monthly price | Commission on product subtotal |
+|---|---:|---:|
+| Starter | €0 | 10% |
+| Merchant | €49 | 7% |
+| Professional | €149 | 5% |
+| Enterprise | From €399 | Negotiated 3.5%–4.5% |
+
+Payment-processing costs are deducted from seller proceeds and recorded separately from WineBloom commission. See [docs/FEES.md](docs/FEES.md) for the calculation rules.
+
+## Technology
+
+- Next.js 16 App Router, React 19, TypeScript, and Tailwind CSS 4
+- Prisma 5 with PostgreSQL in deployed environments and SQLite for local development
+- Auth.js 5 with credentials authentication
+- Stripe Connect, Billing, Tax, Checkout, and Identity
+- Resend for transactional email
+- S3/R2-compatible object storage through the AWS SDK
+- Vitest for unit tests and Playwright for browser tests
+
+## Local development
+
+### Prerequisites
+
+- Node.js 20.9 or newer
+- npm
+
+Stripe, Resend, object storage, and OpenAI credentials are optional for local development. The application supplies local or sandbox behavior when those services are not configured.
+
+### Setup
 
 ```bash
-cp .env.example .env
-# Set a strong secret (required):
-#   openssl rand -base64 32  → paste into AUTH_SECRET
-# Local demo checkout (never in production):
-#   ALLOW_DEMO_CHECKOUT=true
-#   ALLOW_LOCAL_PLAN_UPGRADE=true
+git clone <repository-url>
+cd <repository-directory>
 npm install
-npx prisma migrate dev --name init
+npm run ensure-env
+npm run db:migrate
 npm run db:seed
 npm run dev
 ```
 
-Security remediations: [docs/SECURITY.md](docs/SECURITY.md).  
-Production launch checklist: [docs/LAUNCH.md](docs/LAUNCH.md).
-Operations, staging, monitoring, and backups: [docs/OPERATIONS.md](docs/OPERATIONS.md).
-
-## Production
-
-```bash
-npm run launch:check
-npx prisma migrate deploy
-# Set production env per docs/LAUNCH.md — AUTH_SECRET, Postgres, Stripe, no demo flags
-npm run start
-curl -s https://your-domain/api/health
-```
-
 Open [http://localhost:3000](http://localhost:3000).
+
+`npm run ensure-env` creates `.env` from `.env.example` when needed and generates a development `AUTH_SECRET`. `npm run db:migrate` derives a temporary SQLite-compatible Prisma schema and synchronizes the local database. The canonical `prisma/schema.prisma` remains PostgreSQL-based for production.
 
 ### Demo accounts
 
-Password for all: `password123`
+The seed creates the following accounts. Their shared development password is `password123`.
 
-| Role   | Email                   |
-|--------|-------------------------|
-| Buyer  | buyer@winetreff.local   |
-| Seller | seller@winetreff.local  |
-| Admin  | admin@winetreff.local   |
+| Role | Email |
+|---|---|
+| Buyer | `buyer@feelacy.local` |
+| Seller | `seller@feelacy.local` |
+| Administrator | `admin@feelacy.local` |
 
-Without Stripe keys, **Buy now** completes a demo paid order and finalizes settlement using the estimated processor fee as the actual fee.
+With `ALLOW_DEMO_CHECKOUT=true` and no Stripe keys, checkout creates a local paid order and uses the estimated processor fee as the recorded fee. This path is disabled unconditionally in production.
 
-### Email (welcome + forgot password)
+Without a Resend key, development emails are written to `tmp/email-outbox/`.
 
-Set `RESEND_API_KEY` and `EMAIL_FROM` to send real mail via [Resend](https://resend.com).  
-Without those in development, messages are written to `tmp/email-outbox/` so you can verify content locally.
+## Environment variables
 
-- Join → welcome / registration confirmation email  
-- `/forgot-password` → reset link → `/reset-password`
+Start with `.env.example`. The most important settings are:
 
-## Scripts
+| Variable | Local development | Production |
+|---|---|---|
+| `DATABASE_URL` | Defaults to `file:./dev.db` | Required PostgreSQL URL |
+| `AUTH_SECRET` | Generated by `npm run ensure-env` | Required strong secret |
+| `AUTH_URL` | `http://localhost:3000` | Public HTTPS origin |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | Public HTTPS origin |
+| `ALLOW_DEMO_CHECKOUT` | May be `true` | Must be unset or `false` |
+| `ALLOW_LOCAL_PLAN_UPGRADE` | May be `true` | Must be unset or `false` |
+| `STRIPE_SECRET_KEY` | Optional | Required |
+| `STRIPE_WEBHOOK_SECRET` | Optional | Required |
+| `STRIPE_PRICE_MERCHANT` | Optional | Required |
+| `STRIPE_PRICE_PROFESSIONAL` | Optional | Required |
+| `CRON_SECRET` | Optional unless testing the scheduler | Required |
+| `RESEND_API_KEY` / `EMAIL_FROM` | Optional; uses local outbox | Required with verified sender |
+| `MEDIA_*` | Optional | Required for production uploads |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | Optional; uses local fallback | Optional |
 
-| Script            | Purpose                |
-|-------------------|------------------------|
-| `npm run dev`     | Dev server             |
-| `npm run build`   | Production build       |
-| `npm run db:seed` | Seed plans + catalog   |
-| `npm run db:studio` | Prisma Studio        |
+See [.env.example](.env.example) and [docs/LAUNCH.md](docs/LAUNCH.md) for the complete list and production requirements. Never commit `.env` or service credentials.
 
-## Stripe (production)
+## Commands
 
-1. Set `STRIPE_SECRET_KEY`, webhook secret, and `NEXT_PUBLIC_APP_URL`.
-2. Create Connect platform + Express onboarding from **Sell → Payouts**.
-3. Map Billing Price IDs onto `SellerPlan.stripePriceId` for Merchant/Professional.
-4. Forward webhooks to `/api/webhooks/stripe` (`checkout.session.completed`, `payment_intent.succeeded`, `account.updated`).
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Validate local environment, generate the SQLite Prisma client, and start development |
+| `npm run build` | Generate the production Prisma client and create a Next.js build |
+| `npm run start` | Start a completed production build |
+| `npm run lint` | Lint application source |
+| `npm run typecheck` | Run TypeScript without emitting files |
+| `npm test` | Run the Vitest unit suite |
+| `npm run test:watch` | Run unit tests in watch mode |
+| `npm run test:e2e` | Run Playwright tests on desktop Chromium and mobile emulation |
+| `npm run db:migrate` | Synchronize the local SQLite database |
+| `npm run db:deploy` | Apply committed PostgreSQL migrations |
+| `npm run db:seed` | Seed plans, accounts, taxonomy, and sample listings locally |
+| `npm run db:studio` | Open Prisma Studio against the local database |
+| `npm run launch:check` | Run typecheck, lint, unit tests, and production build |
 
-## Phase 2 (schema ready)
+## Project structure
 
-Saved searches, product comparison, regional hubs, promotional listings, and editorial CMS tables exist; UI ships after Phase 1 settlement is verified.
+```text
+src/
+  app/                 Pages, route handlers, webhooks, and server-rendered flows
+  components/          Shared marketplace and form components
+  i18n/                Supported locales and next-intl request configuration
+  lib/
+    actions/           Authentication, marketplace, delivery, and AI server actions
+    ai/                Assistant orchestration and local fallback behavior
+    commerce/          Fee and settlement rules
+    delivery/          Delivery providers, state machine, quotes, and webhooks
+    security/          Environment guards, cookies, rate limits, and signed tokens
+prisma/
+  schema.prisma        Canonical PostgreSQL data model
+  migrations/          Production database migrations
+  seed.ts              Development seed data
+messages/              Localized UI messages
+tests/e2e/             Playwright browser coverage
+public/                Brand, product, social, and legal assets
+docs/                  Product, security, operations, fees, and launch documentation
+scripts/               Environment and local-Prisma helpers
+```
+
+## Important routes
+
+| Route | Purpose |
+|---|---|
+| `/` and `/search` | Marketplace discovery and faceted search |
+| `/listings/[slug]` | Listing details and purchase entry point |
+| `/merchants/[slug]` | Public seller storefront |
+| `/assistant` | Buyer marketplace assistant |
+| `/account` | Buyer account and identity status |
+| `/sell/*` | Seller dashboard, listings, orders, payouts, plans, assistant, and Express settings |
+| `/orders/[id]` | Buyer and seller order view |
+| `/admin` and `/admin/express` | Moderation and delivery administration |
+| `/legal/*` | Terms, privacy, policies, disclaimers, cookies, and fee disclosure |
+| `/api/health` | Deployment readiness endpoint |
+| `/api/webhooks/stripe` | Stripe payment, subscription, Connect, refund, and Identity events |
+| `/api/webhooks/delivery/[provider]` | Delivery-provider events |
+| `/api/cron/release-reservations` | Recovery job for expired checkout reservations |
+
+## Payments and webhooks
+
+Production checkout uses direct charges on a seller's Stripe Connect Express account. WineBloom's commission is the Stripe application fee; Stripe processing costs remain seller-side and are finalized from the balance transaction.
+
+Configure the Stripe endpoint at `/api/webhooks/stripe` for platform and connected-account events. The required event list is maintained in [docs/OPERATIONS.md](docs/OPERATIONS.md). The handler validates signatures, account and order bindings, currency, amounts, and webhook idempotency before changing order state.
+
+Call `POST /api/cron/release-reservations` every five minutes with `Authorization: Bearer <CRON_SECRET>`. Stripe's `checkout.session.expired` event remains the primary release signal; the scheduled job recovers missed events.
+
+## Verification
+
+Run the complete pre-launch gate:
+
+```bash
+npm run launch:check
+npm run test:e2e
+```
+
+For a production-like environment, also verify the health endpoint and complete buyer, seller, administrator, Connect onboarding, plan-upgrade, and payment smoke paths.
+
+## Production deployment
+
+The intended deployment is a Next.js host such as Vercel, a managed PostgreSQL database, S3/R2-compatible media storage, Stripe live mode, and a verified Resend sender.
+
+```bash
+npm ci
+npm run db:deploy
+npm run launch:check
+npm run start
+```
+
+Production startup fails closed when critical settings are missing or unsafe development flags are enabled. Before launch, follow:
+
+- [Product and engineering plan](docs/PLAN.md)
+- [Launch checklist](docs/LAUNCH.md)
+- [Operations runbook](docs/OPERATIONS.md)
+- [Security notes](docs/SECURITY.md)
+- [Fee rules](docs/FEES.md)
+- [Marketplace assistant](docs/marketplace-ai-assistant.md)
+- [WineBloom Express](docs/feelacy-express.md)
+
+## Safety and compliance notes
+
+- Browsing is public, but protected account, selling, order, and checkout flows enforce the age gate.
+- Alcohol checkout requires a database-backed verified age status.
+- Sellers must complete the required Stripe onboarding before publishing active listings.
+- Sellers declare eligible shipping destinations and remain responsible for alcohol-shipping compliance.
+- Legal documents in the repository are product assets and must be reviewed by qualified counsel for every served jurisdiction before launch.
+- The built-in delivery provider is a sandbox implementation; production courier adapters are not implemented.
+
+## License
+
+See [LICENSE](LICENSE).

@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { verifyOrderCancellation } from "@/lib/security/tokens";
+
+function appUrl(path: string) {
+  return new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
+}
 
 /** Release a RESERVED listing when the buyer cancels Stripe Checkout */
 export async function GET(req: NextRequest) {
   const orderId = req.nextUrl.searchParams.get("orderId");
-  if (!orderId) {
-    return NextResponse.redirect(new URL("/search", req.url));
+  const token = req.nextUrl.searchParams.get("token");
+  if (!orderId || !verifyOrderCancellation(orderId, token)) {
+    return NextResponse.redirect(appUrl("/search"));
   }
 
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(appUrl("/login"));
   }
 
   const order = await prisma.order.findUnique({
@@ -29,7 +35,7 @@ export async function GET(req: NextRequest) {
     order &&
     (order.buyerId === session.user.id || dbUser?.role === "ADMIN");
   if (!allowed || order.status !== "PENDING") {
-    return NextResponse.redirect(new URL("/search", req.url));
+    return NextResponse.redirect(appUrl("/search"));
   }
 
   const listingId = order.items[0]?.listingId;
@@ -54,10 +60,10 @@ export async function GET(req: NextRequest) {
     });
     if (listing) {
       return NextResponse.redirect(
-        new URL(`/listings/${listing.slug}?cancelled=1`, req.url),
+        appUrl(`/listings/${listing.slug}?cancelled=1`),
       );
     }
   }
 
-  return NextResponse.redirect(new URL("/search", req.url));
+  return NextResponse.redirect(appUrl("/search"));
 }

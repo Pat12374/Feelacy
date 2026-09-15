@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #14110f;
-  --ink-soft: #2c261f;
-  --paper: #f3efe6;
-  --paper-deep: #e7e0d2;
-  --bottle: #1f3d32;
-  --bottle-bright: #2f5c4a;
-  --copper: #b08a5a;
-  --copper-soft: #c9a87a;
-  --mist: rgba(243, 239, 230, 0.72);
-  --line: rgba(20, 17, 15, 0.12);
-  --danger: #8b2e2e;
-  --ok: #1f5c3a;
+  --ink: #281514;
+  --ink-soft: #604947;
+  --paper: #fffaf1;
+  --paper-deep: #f6ead8;
+  --bottle: #731521;
+  --bottle-bright: #941f2d;
+  --copper: #b87820;
+  --copper-soft: #d5a653;
+  --mist: rgba(255, 250, 241, 0.82);
+  --line: rgba(115, 21, 33, 0.14);
+  --danger: #8b2635;
+  --ok: #476c46;
   --background: var(--paper);
   --foreground: var(--ink);
   /* Fallbacks; next/font sets --font-fraunces / --font-source on <html> */
@@ -67,7 +67,7 @@ a {
 }
 
 ::selection {
-  background: rgba(47, 92, 74, 0.25);
+  background: rgba(184, 120, 32, 0.25);
 }
 
 .font-display {
@@ -97,23 +97,27 @@ a {
 }
 
 .wt-btn-primary {
-  background: var(--bottle);
+  background: #1f4d3a;
   color: var(--paper);
-  box-shadow: 0 10px 30px rgba(31, 61, 50, 0.25);
+  border: 1px solid #1f4d3a;
+  box-shadow: 0 10px 30px rgba(31, 77, 58, 0.2);
 }
 
 .wt-btn-primary:hover {
-  background: var(--bottle-bright);
+  background: #173b2d;
+  border-color: #173b2d;
 }
 
 .wt-btn-secondary {
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
+  background: #1f4d3a;
+  color: var(--paper);
+  border: 1px solid #1f4d3a;
+  box-shadow: 0 8px 22px rgba(31, 77, 58, 0.14);
 }
 
 .wt-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: #173b2d;
+  border-color: #173b2d;
 }
 
 .wt-input,

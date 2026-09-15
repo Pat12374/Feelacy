@@ -13,7 +13,7 @@ describe("mock delivery provider", () => {
     expect(delivery.providerDeliveryId).toMatch(/^mock_d_/); expect(delivery.status).toBe("courier_assigned"); expect((await provider.getDelivery(delivery.providerDeliveryId)).providerDeliveryId).toBe(delivery.providerDeliveryId);
   });
   it("verifies signed webhooks", () => {
-    vi.stubEnv("DELIVERY_MOCK_WEBHOOK_SECRET", "secret"); const body = "{}"; const h = new Headers({ "x-winetreff-signature": createHmac("sha256", "secret").update(body).digest("hex") });
+    vi.stubEnv("DELIVERY_MOCK_WEBHOOK_SECRET", "secret"); const body = "{}"; const h = new Headers({ "x-feelacy-signature": createHmac("sha256", "secret").update(body).digest("hex") });
     expect(new MockDeliveryProvider().verifyWebhook(h, body)).toBe(true); vi.unstubAllEnvs();
   });
 });

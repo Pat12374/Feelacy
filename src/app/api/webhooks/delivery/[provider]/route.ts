@@ -5,6 +5,8 @@ import { applyProviderEvent } from "@/lib/delivery/service";
 import { rateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(request: Request, context: { params: Promise<{ provider: string }> }) {
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > 256_000) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   const { provider: code } = await context.params;
   if (!rateLimit({ key: `delivery-webhook:${code}`, limit: 300, windowMs: 60_000 }).ok) return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   const config = await prisma.deliveryProviderConfig.findUnique({ where: { code } });
@@ -12,6 +14,7 @@ export async function POST(request: Request, context: { params: Promise<{ provid
   let provider;
   try { provider = getDeliveryProvider(code); } catch { return NextResponse.json({ error: "Provider unavailable" }, { status: 404 }); }
   const rawBody = await request.text();
+  if (rawBody.length > 256_000) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   if (!provider.verifyWebhook(request.headers, rawBody)) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   let payload: unknown;
   try { payload = JSON.parse(rawBody); } catch { return NextResponse.json({ error: "Invalid payload" }, { status: 400 }); }

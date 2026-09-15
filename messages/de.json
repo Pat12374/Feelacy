@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "WineTreff",
+    "brand": "WineBloom",
     "search": "Suchen",
     "sell": "Verkaufen",
     "fees": "Gebühren",
@@ -29,11 +29,11 @@
     "becomeSeller": "Verkäufer werden"
   },
   "footer": {
-    "tagline": "Festpreis-Marktplatz für Weine, Spirituosen, seltene Flaschen, Sammlerstücke und Geschenke. Käufer zahlen nie WineTreff-Provisionen.",
-    "copyright": "© {year} WineTreff. Nur ab 18. Genießen Sie verantwortungsvoll."
+    "tagline": "Festpreis-Marktplatz für Weine, Spirituosen, seltene Flaschen, Sammlerstücke und Geschenke. Käufer zahlen nie WineBloom-Provisionen.",
+    "copyright": "© {year} WineBloom. Nur ab 18. Genießen Sie verantwortungsvoll."
   },
   "home": {
-    "welcome": "Willkommen bei WineTreff",
+    "welcome": "Willkommen bei WineBloom",
     "headline": "Festpreis-Flaschen von vertrauenswürdigen Händlern — Weine, Spirituosen, Raritäten, Sammlerstücke und Geschenke. Zuerst suchen, kaufe, was du willst, und Käufer zahlen null Provisionen.",
     "searchPlaceholder": "Riesling, Speyside, Pauillac suchen…",
     "searchCta": "Flaschen suchen",
@@ -74,7 +74,7 @@
     "forgotPassword": "Passwort vergessen?",
     "newHere": "Neu hier?",
     "createAccount": "Konto erstellen",
-    "joinTitle": "WineTreff beitreten",
+    "joinTitle": "WineBloom beitreten",
     "joinHint": "Erstellen Sie ein Käuferkonto. Verkaufen können Sie danach freischalten.",
     "name": "Name",
     "alreadyRegistered": "Bereits registriert?",
@@ -97,14 +97,14 @@
   },
   "age": {
     "title": "Sind Sie volljährig?",
-    "body": "Sie müssen mindestens 18 Jahre alt sein, um Alkohol auf WineTreff zu browsen und zu kaufen. Mit dem Fortfahren bestätigen Sie das Mindestalter in Ihrem Land.",
+    "body": "Sie müssen mindestens 18 Jahre alt sein, um Alkohol auf WineBloom zu browsen und zu kaufen. Mit dem Fortfahren bestätigen Sie das Mindestalter in Ihrem Land.",
     "confirm": "Ich bin 18 oder älter — eintreten"
   },
   "listing": {
     "soldBy": "Verkauft von",
     "shipping": "Versand {amount}",
     "taxesHint": "Steuern/Zölle werden bei Bedarf im Checkout angezeigt",
-    "noBuyerFees": "Käufer zahlen keine WineTreff-Provision oder Marktplatzgebühren.",
+    "noBuyerFees": "Käufer zahlen keine WineBloom-Provision oder Marktplatzgebühren.",
     "yourTotal": "Ihr Gesamtbetrag heute: {amount} (Preis + Versand)",
     "buyNow": "Jetzt kaufen — Festpreis",
     "signInToBuy": "Zum Kauf anmelden",
@@ -159,23 +159,24 @@
     "pendingReview": "Zur Prüfung einreichen",
     "active": "Aktiv (Auszahlungen nötig)",
     "unlisted": "Nicht gelistet",
-    "openShop": "Öffnen Sie Ihren WineTreff-Shop",
-    "openShopHint": "Sie starten mit dem kostenlosen Starter-Plan (10 % Provision). Jederzeit upgraden. Käufer zahlen nie WineTreff-Gebühren.",
+    "openShop": "Öffnen Sie Ihren WineBloom-Shop",
+    "openShopHint": "Sie starten mit dem kostenlosen Starter-Plan (10 % Provision). Jederzeit upgraden. Käufer zahlen nie WineBloom-Gebühren.",
     "shopName": "Shop-Name",
     "bio": "Bio",
     "country": "Ländercode",
     "createSeller": "Verkäuferkonto erstellen",
     "planTitle": "Plan & Gebühren",
-    "planHint": "Hybrid aus Abo + Provision. Zahlungsabwicklung wird von Ihren Erlösen abgezogen und getrennt von der WineTreff-Provision ausgewiesen. Käufer zahlen nie Marktplatzgebühren.",
+    "planHint": "Hybrid aus Abo + Provision. Zahlungsabwicklung wird von Ihren Erlösen abgezogen und getrennt von der WineBloom-Provision ausgewiesen. Käufer zahlen nie Marktplatzgebühren.",
     "current": "Aktuell",
     "switchTo": "Wechseln zu {plan}",
-    "enterpriseContact": "Kontaktieren Sie den WineTreff-Admin für Enterprise.",
+    "enterpriseContact": "Kontaktieren Sie den WineBloom-Admin für Enterprise.",
     "settlementFormula": "Abrechnungsformel",
-    "sellerHome": "Verkäufer-Start"
+    "sellerHome": "Verkäufer-Start",
+    "quantity": "Menge"
   },
   "fees": {
     "title": "Gebühren",
-    "intro": "Klare Regeln für Käufer und Verkäufer. WineTreff berechnet Käufern keine Marktplatzprovisionen, Aufschläge, Transaktionsgebühren oder Basis-KI-Gebühren.",
+    "intro": "Klare Regeln für Käufer und Verkäufer. WineBloom berechnet Käufern keine Marktplatzprovisionen, Aufschläge, Transaktionsgebühren oder Basis-KI-Gebühren.",
     "buyersTitle": "Was Käufer zahlen",
     "buyerPrice": "Angezeigter Produktpreis",
     "buyerShipping": "Angegebener Versand",
@@ -185,7 +186,7 @@
     "monthly": "Monatlich",
     "commission": "Provision",
     "processingTitle": "Zahlungsabwicklung",
-    "processingBody": "Wird von den Verkäufererlösen abgezogen und getrennt von der WineTreff-Provision ausgewiesen. Schätzung: 2,5 % + 0,25 € pro Zahlung. Das Ledger speichert die tatsächliche Gebühr des Anbieters.",
+    "processingBody": "Wird von den Verkäufererlösen abgezogen und getrennt von der WineBloom-Provision ausgewiesen. Schätzung: 2,5 % + 0,25 € pro Zahlung. Das Ledger speichert die tatsächliche Gebühr des Anbieters.",
     "negotiated": "3,5 %–4,5 % verhandelt",
     "from": "ab {amount}"
   },
@@ -197,7 +198,7 @@
     "noPurchases": "Noch keine Käufe."
   },
   "metadata": {
-    "title": "WineTreff — Feine Flaschen, Festpreis",
+    "title": "WineBloom — Feine Flaschen, Festpreis",
     "description": "Marktplatz für Weine, Spirituosen, seltene Flaschen und Getränke-Sammlerstücke. Käufer zahlen nur Listenpreis, Versand und anwendbare Steuern."
   }
 }

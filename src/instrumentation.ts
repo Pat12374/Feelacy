@@ -13,7 +13,7 @@ export async function register() {
 
   const errors: string[] = [];
 
-  if (!authSecret() || authSecret()!.length < 16) {
+  if (!authSecret() || authSecret()!.length < 32) {
     errors.push("AUTH_SECRET must be set to a long random string (openssl rand -base64 32).");
   }
 
@@ -37,6 +37,15 @@ export async function register() {
     if (!process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://")) {
       errors.push("NEXT_PUBLIC_APP_URL must be an https:// URL in production.");
     }
+    try {
+      const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
+      const authOrigin = new URL(process.env.AUTH_URL!).origin;
+      if (appOrigin !== authOrigin) {
+        errors.push("AUTH_URL and NEXT_PUBLIC_APP_URL must use the same trusted origin.");
+      }
+    } catch {
+      errors.push("AUTH_URL and NEXT_PUBLIC_APP_URL must be valid absolute URLs.");
+    }
     if (!process.env.STRIPE_SECRET_KEY) {
       errors.push("STRIPE_SECRET_KEY is required in production.");
     }
@@ -56,12 +65,12 @@ export async function register() {
       errors.push("RESEND_API_KEY is required in production for welcome and password-reset email.");
     }
     if (!process.env.EMAIL_FROM) {
-      errors.push("EMAIL_FROM is required in production (e.g. WineTreff <hello@yourdomain.com>).");
+      errors.push("EMAIL_FROM is required in production (e.g. WineBloom <hello@yourdomain.com>).");
     }
   }
 
   if (errors.length) {
-    const message = `WineTreff launch config invalid:\n- ${errors.join("\n- ")}`;
+    const message = `WineBloom launch config invalid:\n- ${errors.join("\n- ")}`;
     if (isProduction()) {
       throw new Error(message);
     }

@@ -34,6 +34,7 @@ export default async function AdminPage() {
       </p>
       <Link href="/admin/express" className="wt-btn wt-btn-primary mt-5">Open Express monitor</Link>
 
+      <Link href="/admin/catalog-imports" className="wt-btn wt-btn-secondary mt-5 ml-3">Review imported product compliance</Link>
       <h2 className="mt-10 font-display text-2xl">Sellers</h2>
       <div className="mt-4 grid gap-4">
         {sellers.map((s) => (

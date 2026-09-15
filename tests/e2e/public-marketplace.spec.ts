@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("public marketplace renders and exposes search", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/WineTreff/i);
+  await expect(page).toHaveTitle(/WineBloom/i);
   await expect(page.locator("main")).toBeVisible();
   await expect(page.getByRole("textbox").first()).toBeVisible();
 });

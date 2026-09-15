@@ -54,6 +54,7 @@ export default async function ListingDetailPage({
   const isSellerOwner = session?.user?.id === listing.seller.userId;
   const isAdmin = session?.user?.role === "ADMIN";
   const showSettlement = isSellerOwner || isAdmin;
+  const isWine = listing.category?.slug === "wine";
 
   const image =
     listing.images[0]?.url ??
@@ -61,15 +62,15 @@ export default async function ListingDetailPage({
 
   return (
     <div className="wt-container py-10">
-      <div className="grid gap-10 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-[1.5rem] bg-[var(--paper-deep)]">
+      <div className={`grid gap-10 ${isWine ? "mx-auto max-w-3xl" : "lg:grid-cols-2"}`}>
+        {!isWine && <div className="overflow-hidden rounded-[1.5rem] bg-[var(--paper-deep)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image}
             alt={listing.title}
             className="aspect-[4/5] w-full object-cover transition duration-700 hover:scale-[1.02]"
           />
-        </div>
+        </div>}
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-[var(--copper)]">
             {[listing.category?.name, listing.region?.name, listing.vintage]
@@ -155,7 +156,7 @@ export default async function ListingDetailPage({
             <h3 className="font-semibold">{ts("settlementFormula")}</h3>
             <ul className="mt-3 space-y-2 text-[var(--ink-soft)]">
               <li>
-                WineTreff ({formatBpsAsPercent(listing.seller.commissionBps)}):{" "}
+                WineBloom ({formatBpsAsPercent(listing.seller.commissionBps)}):{" "}
                 {formatEur(preview.commissionAmountCents)}
               </li>
               <li>

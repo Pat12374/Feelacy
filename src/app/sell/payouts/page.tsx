@@ -18,7 +18,7 @@ export default async function SellPayoutsPage({
     <div className="wt-container py-10">
       <h1 className="font-sans text-3xl font-semibold tracking-tight">Payouts</h1>
       <p className="mt-2 max-w-2xl text-[var(--ink-soft)]">
-        Connect a Stripe Express account to receive sale proceeds. WineTreff
+        Connect a Stripe Express account to receive sale proceeds. WineBloom
         commission is taken as an application fee; payment-processing charges
         are deducted from seller proceeds and disclosed separately.
       </p>

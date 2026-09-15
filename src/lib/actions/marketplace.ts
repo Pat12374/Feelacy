@@ -23,28 +23,50 @@ import {
   LISTING_PRICE_MIN_CENTS,
   sanitizeListingImageUrl,
 } from "@/lib/security/listing";
+import { clientIpFromHeaders, rateLimit } from "@/lib/security/rate-limit";
 import {
-  clientIpFromHeaders,
-  rateLimit,
-} from "@/lib/security/rate-limit";
+  fields as catalogFields,
+  productSchema as catalogProductSchema,
+  canonicalUrl,
+} from "@/lib/catalog-import/product";
+import {
+  publicationEligibility,
+  publicationDigest,
+} from "@/lib/catalog-import/compliance";
+import { signOrderCancellation } from "@/lib/security/tokens";
 
 const listingSchema = z.object({
   title: z.string().min(3).max(160),
   description: z.string().min(20).max(10_000),
-  priceEuros: z.coerce.number().positive().max(LISTING_PRICE_MAX_CENTS / 100),
+  priceEuros: z.coerce
+    .number()
+    .positive()
+    .max(LISTING_PRICE_MAX_CENTS / 100),
+  quantity: z.coerce.number().int().min(0).max(1_000_000).default(1),
   shippingEuros: z.coerce.number().min(0).max(5_000).default(0),
   categoryId: z.string().optional(),
   regionId: z.string().optional(),
   producerId: z.string().optional(),
-  vintage: z.coerce.number().int().optional().or(z.literal("")),
-  abv: z.coerce.number().optional().or(z.literal("")),
-  bottleSizeMl: z.coerce.number().int().optional().or(z.literal("")),
+  vintage: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().min(1000).max(2100).optional(),
+  ),
+  abv: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().min(0).max(100).optional(),
+  ),
+  bottleSizeMl: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().min(1).max(1000000).optional(),
+  ),
   condition: z.string().max(80).optional(),
   fillLevel: z.string().max(80).optional(),
   labelCondition: z.string().max(80).optional(),
   tastingNotes: z.string().max(5_000).optional(),
   imageUrl: z.string().max(2_000).optional().or(z.literal("")),
-  status: z.enum(["DRAFT", "ACTIVE", "UNLISTED", "PENDING_REVIEW"]).default("DRAFT"),
+  status: z
+    .enum(["DRAFT", "ACTIVE", "UNLISTED", "PENDING_REVIEW"])
+    .default("DRAFT"),
   containsAlcohol: z.boolean(),
   ageVerificationRequired: z.boolean(),
   signatureRequired: z.boolean(),
@@ -88,6 +110,7 @@ export async function upsertListingAction(formData: FormData): Promise<void> {
     title: formData.get("title"),
     description: formData.get("description"),
     priceEuros: formData.get("priceEuros"),
+    quantity: formData.get("quantity") || 1,
     shippingEuros: formData.get("shippingEuros") || 0,
     categoryId: formData.get("categoryId") || undefined,
     regionId: formData.get("regionId") || undefined,
@@ -158,14 +181,104 @@ export async function upsertListingAction(formData: FormData): Promise<void> {
       where: { id: listingId, sellerId: seller.id },
     });
     if (!existing) redirect("/sell/listings?error=notfound");
+    if (existing.status === "RESERVED")
+      redirect(`/sell/listings/${listingId}?error=reserved`);
+    const existingImage = await prisma.listingImage.findFirst({
+      where: { listingId },
+      orderBy: { sortOrder: "asc" },
+    });
+    const imageChanged =
+      data.imageUrl !== undefined && imageUrl !== (existingImage?.url || null);
+    const catalogProduct = JSON.parse(existing.catalogProductJson) as Record<
+      string,
+      string
+    >;
+    if (existing.imported) {
+      for (const f of catalogFields)
+        if (formData.has(`catalog_${f}`))
+          catalogProduct[f] = String(formData.get(`catalog_${f}`) || "");
+      Object.assign(catalogProduct, {
+        title: data.title,
+        description: data.description,
+        category: category?.slug || "",
+        price: String(priceCents / 100),
+        quantity: String(data.quantity),
+        currency: existing.currency,
+        vintage:
+          data.vintage == null
+            ? catalogProduct.vintage === "NV"
+              ? "NV"
+              : ""
+            : String(data.vintage ?? ""),
+        abv: String(data.abv ?? ""),
+        bottleSizeMl: String(data.bottleSizeMl ?? ""),
+        condition: data.condition || "",
+      });
+      if (!catalogProductSchema.safeParse(catalogProduct).success)
+        redirect(`/sell/listings/${listingId}?error=invalid`);
+    }
+    const catalogProductJson = existing.imported
+      ? JSON.stringify(catalogProduct)
+      : existing.catalogProductJson;
+    const containsAlcohol =
+      data.containsAlcohol ||
+      (existing.imported && ["wine", "spirits"].includes(category?.slug || ""));
+    const proposed = {
+      ...existing,
+      catalogProductJson,
+      title: data.title,
+      description: data.description,
+      categoryId: data.categoryId || null,
+      containsAlcohol,
+      weightGrams: data.weightGrams ?? null,
+      specialHandling: data.specialHandling ?? null,
+      fragile: data.fragile,
+      localDeliveryPermitted: data.localDeliveryPermitted,
+    };
+    const reconcileInventory = formData.get("inventoryReconciled") === "on";
+    if (reconcileInventory) {
+      const disconnected = existing.sourceConnectionId && await prisma.catalogConnection.findFirst({ where: { id: existing.sourceConnectionId, sellerId: seller.id, status: "DISCONNECTED" } });
+      if (!disconnected) redirect(`/sell/listings/${listingId}?error=connected_inventory`);
+      proposed.syncStatus = "DISCONNECTED";
+    }
+    const invalidatesReview =
+      existing.imported &&
+      (imageChanged ||
+        publicationDigest(proposed) !== publicationDigest(existing));
+    if (invalidatesReview) proposed.importComplianceStatus = "PENDING";
+    if (data.status === "ACTIVE" && !publicationEligibility(proposed).allowed)
+      redirect(`/sell/listings/${listingId}?error=import_compliance`);
 
-    await prisma.listing.update({
-      where: { id: listingId },
+    const saved = await prisma.listing.updateMany({
+      where: {
+        id: listingId,
+        sellerId: seller.id,
+        updatedAt: existing.updatedAt,
+        status: { not: "RESERVED" },
+      },
       data: {
+        ...(reconcileInventory ? { syncStatus: "DISCONNECTED" } : {}),
+        ...(existing.imported
+          ? {
+              catalogProductJson,
+              sku: catalogProduct.sku || null,
+              gtin: catalogProduct.gtin || null,
+              sourceUrl: catalogProduct.sourceUrl
+                ? canonicalUrl(catalogProduct.sourceUrl)
+                : null,
+            }
+          : {}),
+        ...(invalidatesReview
+          ? {
+              importComplianceStatus: "PENDING",
+              importComplianceReviewJson: null,
+            }
+          : {}),
         title: data.title,
         description: data.description,
         priceCents,
         shippingCents,
+        quantity: data.quantity,
         categoryId: data.categoryId || null,
         regionId: data.regionId || null,
         producerId: data.producerId || null,
@@ -179,18 +292,31 @@ export async function upsertListingAction(formData: FormData): Promise<void> {
         status,
         saleType: "FIXED",
         searchText,
-        containsAlcohol: data.containsAlcohol,
-        ageVerificationRequired: data.containsAlcohol || data.ageVerificationRequired,
-        signatureRequired: data.containsAlcohol || data.signatureRequired,
+        containsAlcohol,
+        ageVerificationRequired:
+          containsAlcohol || data.ageVerificationRequired,
+        signatureRequired: containsAlcohol || data.signatureRequired,
         fragile: data.fragile,
         localDeliveryPermitted: data.localDeliveryPermitted,
-        declaredValueCents: data.declaredValueEuros != null ? Math.round(data.declaredValueEuros * 100) : null,
+        declaredValueCents:
+          data.declaredValueEuros != null
+            ? Math.round(data.declaredValueEuros * 100)
+            : null,
         weightGrams: data.weightGrams ?? null,
         specialHandling: data.specialHandling,
       },
     });
 
-    if (data.imageUrl !== undefined) {
+    if (!saved.count) redirect(`/sell/listings/${listingId}?error=changed`);
+    if (existing.imported && data.status === "ACTIVE")
+      await prisma.auditLog.create({
+        data: {
+          actorId: session.user.id,
+          action: "CATALOG_PUBLICATION_REQUESTED",
+          meta: JSON.stringify({ listingId, sellerId: seller.id, status }),
+        },
+      });
+    if (imageChanged) {
       await prisma.listingImage.deleteMany({ where: { listingId } });
       if (imageUrl) {
         await prisma.listingImage.create({
@@ -216,6 +342,7 @@ export async function upsertListingAction(formData: FormData): Promise<void> {
       description: data.description,
       priceCents,
       shippingCents,
+      quantity: data.quantity,
       categoryId: data.categoryId || null,
       regionId: data.regionId || null,
       producerId: data.producerId || null,
@@ -230,11 +357,15 @@ export async function upsertListingAction(formData: FormData): Promise<void> {
       saleType: "FIXED",
       searchText,
       containsAlcohol: data.containsAlcohol,
-      ageVerificationRequired: data.containsAlcohol || data.ageVerificationRequired,
+      ageVerificationRequired:
+        data.containsAlcohol || data.ageVerificationRequired,
       signatureRequired: data.containsAlcohol || data.signatureRequired,
       fragile: data.fragile,
       localDeliveryPermitted: data.localDeliveryPermitted,
-      declaredValueCents: data.declaredValueEuros != null ? Math.round(data.declaredValueEuros * 100) : null,
+      declaredValueCents:
+        data.declaredValueEuros != null
+          ? Math.round(data.declaredValueEuros * 100)
+          : null,
       weightGrams: data.weightGrams ?? null,
       specialHandling: data.specialHandling,
       images: imageUrl
@@ -259,8 +390,7 @@ export async function changeSellerPlanAction(planCode: string): Promise<void> {
   });
   if (!plan) redirect("/sell/plan?error=missing");
 
-  const defaults =
-    PLAN_DEFAULTS[planCode as keyof typeof PLAN_DEFAULTS];
+  const defaults = PLAN_DEFAULTS[planCode as keyof typeof PLAN_DEFAULTS];
 
   // Free Starter can always be applied locally
   if (plan.monthlyPriceCents === 0) {
@@ -384,22 +514,51 @@ export async function setEnterpriseCommissionAction(
 }
 
 export async function moderateListingAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const adminSession = await requireAdmin();
   const listingId = String(formData.get("listingId") ?? "");
   const status = String(formData.get("status") ?? "");
-  if (!listingId || !["ACTIVE", "UNLISTED", "PENDING_REVIEW"].includes(status)) {
+  if (
+    !listingId ||
+    !["ACTIVE", "UNLISTED", "PENDING_REVIEW"].includes(status)
+  ) {
     redirect("/admin?error=moderation");
   }
-  await prisma.listing.update({
+  const reviewed = await prisma.listing.findUnique({
     where: { id: listingId },
+  });
+  if (
+    reviewed &&
+    status === "ACTIVE" &&
+    !publicationEligibility(reviewed).allowed
+  )
+    redirect("/admin?error=import_compliance");
+  if (reviewed?.status === "RESERVED") redirect("/admin?error=reserved");
+  if (!reviewed) redirect("/admin?error=notfound");
+  const moderated = await prisma.listing.updateMany({
+    where: {
+      id: listingId,
+      updatedAt: reviewed.updatedAt,
+      status: { not: "RESERVED" },
+    },
     data: { status },
+  });
+  if (!moderated.count) redirect("/admin?error=changed");
+  await prisma.auditLog.create({
+    data: {
+      actorId: adminSession.user.id,
+      action: "LISTING_MODERATED",
+      meta: JSON.stringify({ listingId, sellerId: reviewed.sellerId, status }),
+    },
   });
   revalidatePath("/admin");
   revalidatePath("/search");
   redirect("/admin?ok=1");
 }
 
-export async function startCheckoutAction(listingId: string, deliveryQuoteId?: string): Promise<void> {
+export async function startCheckoutAction(
+  listingId: string,
+  deliveryQuoteId?: string,
+): Promise<void> {
   const session = await requireAgeVerified();
   const ip = clientIpFromHeaders(await headers());
   const limited = rateLimit({
@@ -410,16 +569,37 @@ export async function startCheckoutAction(listingId: string, deliveryQuoteId?: s
   if (!limited.ok) redirect("/search?error=rate");
 
   const previewListing = await prisma.listing.findFirst({
-    where: { id: listingId, status: "ACTIVE", quantity: { gt: 0 } },
+    where: {
+      id: listingId,
+      status: "ACTIVE",
+      quantity: { gt: 0 },
+      syncStatus: { notIn: ["CONFLICT", "FAILED", "UNCERTAIN"] },
+    },
     include: { seller: true },
   });
-  if (!previewListing) redirect("/search?error=unavailable");
+  if (!previewListing || !publicationEligibility(previewListing).allowed)
+    redirect("/search?error=unavailable");
   if (previewListing.seller.userId === session.user.id) {
     redirect(`/listings/${previewListing.slug}?error=own`);
   }
-  const deliveryQuote = deliveryQuoteId ? await prisma.deliveryQuote.findFirst({ where: { id: deliveryQuoteId, sellerId: previewListing.sellerId }, include: { pickupLocation: true } }) : null;
-  if (deliveryQuoteId && (!deliveryQuote || deliveryQuote.expiresAt <= new Date())) redirect(`/checkout/${listingId}?error=quote_expired`);
-  if (deliveryQuote && (!previewListing.localDeliveryPermitted || (previewListing.containsAlcohol && (!deliveryQuote.ageVerification || deliveryQuote.contactlessAllowed)))) redirect(`/checkout/${listingId}?error=ineligible`);
+  const deliveryQuote = deliveryQuoteId
+    ? await prisma.deliveryQuote.findFirst({
+        where: { id: deliveryQuoteId, sellerId: previewListing.sellerId },
+        include: { pickupLocation: true },
+      })
+    : null;
+  if (
+    deliveryQuoteId &&
+    (!deliveryQuote || deliveryQuote.expiresAt <= new Date())
+  )
+    redirect(`/checkout/${listingId}?error=quote_expired`);
+  if (
+    deliveryQuote &&
+    (!previewListing.localDeliveryPermitted ||
+      (previewListing.containsAlcohol &&
+        (!deliveryQuote.ageVerification || deliveryQuote.contactlessAllowed)))
+  )
+    redirect(`/checkout/${listingId}?error=ineligible`);
 
   const preview = buildSettlementPreview({
     productSubtotalCents: previewListing.priceCents,
@@ -430,10 +610,26 @@ export async function startCheckoutAction(listingId: string, deliveryQuoteId?: s
   // Atomic reserve: only one concurrent buyer wins
   const reservationExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
   const reserved = await prisma.$transaction(async (tx) => {
+    const eligibilityListing = await tx.listing.findUnique({
+      where: { id: listingId },
+    });
+    if (
+      !eligibilityListing ||
+      eligibilityListing.updatedAt.getTime() !==
+        previewListing.updatedAt.getTime() ||
+      !publicationEligibility(eligibilityListing).allowed
+    )
+      return null;
     // Conditional write is the concurrency lock: exactly one buyer can change
     // an ACTIVE in-stock listing to RESERVED.
     const claimed = await tx.listing.updateMany({
-      where: { id: listingId, status: "ACTIVE", quantity: { gt: 0 } },
+      where: {
+        id: listingId,
+        status: "ACTIVE",
+        updatedAt: eligibilityListing.updatedAt,
+        quantity: { gt: 0 },
+        syncStatus: { notIn: ["CONFLICT", "FAILED", "UNCERTAIN"] },
+      },
       data: { status: "RESERVED", quantity: { decrement: 1 } },
     });
     if (claimed.count !== 1) return null;
@@ -480,8 +676,42 @@ export async function startCheckoutAction(listingId: string, deliveryQuoteId?: s
     });
 
     if (deliveryQuote) {
-      await tx.delivery.create({ data: { orderId: order.id, sellerId: listing.sellerId, buyerId: session.user.id, pickupLocationId: deliveryQuote.pickupLocationId, providerConfigId: deliveryQuote.providerConfigId, quoteId: deliveryQuote.id, fulfillmentType: deliveryQuote.fulfillmentType, status: "awaiting_payment", deliveryAddressJson: deliveryQuote.deliveryAddressJson, ageRestricted: listing.containsAlcohol, signatureRequired: deliveryQuote.signatureRequired, contactlessAllowed: deliveryQuote.contactlessAllowed, pickupEta: deliveryQuote.pickupEta, deliveryEta: deliveryQuote.deliveryEta, buyerAcknowledgedAt: new Date(), history: { create: [{ toStatus: "awaiting_payment", source: "buyer", detail: "Buyer selected and acknowledged delivery terms." }] } } });
-      await tx.deliveryAcknowledgment.create({ data: { orderId: order.id, buyerId: session.user.id, kind: "AGE_AND_FAILED_DELIVERY", version: "2026-09-02" } });
+      await tx.delivery.create({
+        data: {
+          orderId: order.id,
+          sellerId: listing.sellerId,
+          buyerId: session.user.id,
+          pickupLocationId: deliveryQuote.pickupLocationId,
+          providerConfigId: deliveryQuote.providerConfigId,
+          quoteId: deliveryQuote.id,
+          fulfillmentType: deliveryQuote.fulfillmentType,
+          status: "awaiting_payment",
+          deliveryAddressJson: deliveryQuote.deliveryAddressJson,
+          ageRestricted: listing.containsAlcohol,
+          signatureRequired: deliveryQuote.signatureRequired,
+          contactlessAllowed: deliveryQuote.contactlessAllowed,
+          pickupEta: deliveryQuote.pickupEta,
+          deliveryEta: deliveryQuote.deliveryEta,
+          buyerAcknowledgedAt: new Date(),
+          history: {
+            create: [
+              {
+                toStatus: "awaiting_payment",
+                source: "buyer",
+                detail: "Buyer selected and acknowledged delivery terms.",
+              },
+            ],
+          },
+        },
+      });
+      await tx.deliveryAcknowledgment.create({
+        data: {
+          orderId: order.id,
+          buyerId: session.user.id,
+          kind: "AGE_AND_FAILED_DELIVERY",
+          version: "2026-09-02",
+        },
+      });
     }
 
     return { order, listing };
@@ -501,53 +731,59 @@ export async function startCheckoutAction(listingId: string, deliveryQuoteId?: s
       const allowedCountries = listing.seller.shipToCountries
         .split(",")
         .map((country) => country.trim().toUpperCase())
-        .filter(Boolean) as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[];
-      const checkout = await stripe.checkout.sessions.create({
-        mode: "payment",
-        automatic_tax: {
-          enabled: process.env.STRIPE_AUTOMATIC_TAX === "true",
-        },
-        line_items: [
-          {
-            quantity: 1,
-            price_data: {
-              currency: listing.currency,
-              unit_amount: listing.priceCents,
-              product_data: { name: listing.title },
-            },
+        .filter(
+          Boolean,
+        ) as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[];
+      const checkout = await stripe.checkout.sessions.create(
+        {
+          mode: "payment",
+          automatic_tax: {
+            enabled: process.env.STRIPE_AUTOMATIC_TAX === "true",
           },
-          ...(listing.shippingCents > 0
-            ? [
-                {
-                  quantity: 1,
-                  price_data: {
-                    currency: listing.currency,
-                    unit_amount: listing.shippingCents,
-                    product_data: { name: "Shipping" },
+          line_items: [
+            {
+              quantity: 1,
+              price_data: {
+                currency: listing.currency,
+                unit_amount: listing.priceCents,
+                product_data: { name: listing.title },
+              },
+            },
+            ...(listing.shippingCents > 0
+              ? [
+                  {
+                    quantity: 1,
+                    price_data: {
+                      currency: listing.currency,
+                      unit_amount: listing.shippingCents,
+                      product_data: { name: "Shipping" },
+                    },
                   },
-                },
-              ]
-            : []),
-        ],
-        payment_intent_data: {
-          application_fee_amount: preview.commissionAmountCents,
-          metadata: { orderId: order.id, listingId: listing.id },
+                ]
+              : []),
+          ],
+          payment_intent_data: {
+            application_fee_amount: preview.commissionAmountCents,
+            metadata: { orderId: order.id, listingId: listing.id },
+          },
+          shipping_address_collection: {
+            allowed_countries:
+              allowedCountries.length > 0 ? allowedCountries : ["DE"],
+          },
+          expires_at: Math.floor(reservationExpiresAt.getTime() / 1000),
+          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders/${order.id}?paid=1`,
+          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/checkout/cancel?orderId=${order.id}&token=${signOrderCancellation(order.id)}`,
+          metadata: {
+            orderId: order.id,
+            listingId: listing.id,
+            expectedPreTaxAmount: String(
+              preview.productSubtotalCents + preview.shippingCents,
+            ),
+            expectedCurrency: listing.currency,
+          },
         },
-        shipping_address_collection: {
-          allowed_countries: allowedCountries.length > 0 ? allowedCountries : ["DE"],
-        },
-        expires_at: Math.floor(reservationExpiresAt.getTime() / 1000),
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders/${order.id}?paid=1`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/checkout/cancel?orderId=${order.id}`,
-        metadata: {
-          orderId: order.id,
-          listingId: listing.id,
-          expectedPreTaxAmount: String(
-            preview.productSubtotalCents + preview.shippingCents,
-          ),
-          expectedCurrency: listing.currency,
-        },
-      }, { stripeAccount: listing.seller.stripeAccountId! });
+        { stripeAccount: listing.seller.stripeAccountId! },
+      );
       if (!checkout.url) throw new Error("Stripe Checkout URL missing");
       await prisma.order.update({
         where: { id: order.id },
@@ -594,7 +830,25 @@ export async function startCheckoutAction(listingId: string, deliveryQuoteId?: s
     }),
   ]);
 
-  if (deliveryQuote) await prisma.$transaction([prisma.delivery.update({ where: { orderId: order.id }, data: { status: "awaiting_seller_acceptance" } }), prisma.deliveryStatusHistory.create({ data: { deliveryId: (await prisma.delivery.findUniqueOrThrow({ where: { orderId: order.id } })).id, fromStatus: "awaiting_payment", toStatus: "awaiting_seller_acceptance", source: "payment" } })]);
+  if (deliveryQuote)
+    await prisma.$transaction([
+      prisma.delivery.update({
+        where: { orderId: order.id },
+        data: { status: "awaiting_seller_acceptance" },
+      }),
+      prisma.deliveryStatusHistory.create({
+        data: {
+          deliveryId: (
+            await prisma.delivery.findUniqueOrThrow({
+              where: { orderId: order.id },
+            })
+          ).id,
+          fromStatus: "awaiting_payment",
+          toStatus: "awaiting_seller_acceptance",
+          source: "payment",
+        },
+      }),
+    ]);
 
   redirect(`/orders/${order.id}?paid=1&demo=1`);
 }
@@ -649,11 +903,17 @@ const shippingUpdateSchema = z.object({
   orderId: z.string().min(1),
   carrier: z.string().trim().max(80).optional(),
   trackingNumber: z.string().trim().max(160).optional(),
-  trackingUrl: z.string().url().max(2_000).optional().or(z.literal("")),
+  trackingUrl: z
+    .string()
+    .url()
+    .max(2_000)
+    .refine((value) => new URL(value).protocol === "https:", "HTTPS required")
+    .optional()
+    .or(z.literal("")),
   status: z.enum(["SHIPPED", "DELIVERED"]),
 });
 
-/** Records seller-managed shipping; WineTreff never acts as fulfiller or carrier. */
+/** Records seller-managed shipping; WineBloom never acts as fulfiller or carrier. */
 export async function updateShippingAction(formData: FormData): Promise<void> {
   const { seller } = await requireSeller();
   const parsed = shippingUpdateSchema.safeParse({
@@ -693,13 +953,15 @@ export async function updateShippingAction(formData: FormData): Promise<void> {
 
 export async function refundOrderAction(formData: FormData): Promise<void> {
   const { seller } = await requireSeller();
-  const parsed = z.object({
-    orderId: z.string().min(1),
-    amountEuros: z.coerce.number().positive(),
-  }).safeParse({
-    orderId: formData.get("orderId"),
-    amountEuros: formData.get("amountEuros"),
-  });
+  const parsed = z
+    .object({
+      orderId: z.string().min(1),
+      amountEuros: z.coerce.number().positive(),
+    })
+    .safeParse({
+      orderId: formData.get("orderId"),
+      amountEuros: formData.get("amountEuros"),
+    });
   if (!parsed.success) redirect("/sell/orders?error=refund");
 
   const order = await prisma.order.findFirst({

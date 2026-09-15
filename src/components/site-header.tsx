@@ -12,20 +12,19 @@ export async function SiteHeader() {
   const locale = await getLocale();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper)]">
+    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[rgba(255,250,241,.94)] backdrop-blur-xl">
       <div className="wt-container flex h-16 items-center gap-3 sm:h-20">
         <Link
           href="/"
-          className="shrink-0"
-          aria-label={t("brand")}
+          className="flex h-14 w-14 shrink-0 items-center justify-center sm:h-16 sm:w-16"
+          aria-label="WineBloom — For Every Occasion."
         >
           <Image
-            src="/winetreff-logo-site-v2.png"
-            alt=""
-            width={2056}
-            height={765}
-            priority
-            className="h-9 w-auto sm:h-12"
+            src="/winebloom-logo.png"
+            alt="WineBloom — For Every Occasion."
+            width={64}
+            height={64}
+            className="h-full w-full object-contain"
           />
         </Link>
 
@@ -68,7 +67,7 @@ export async function SiteHeader() {
               <Link href="/login" className="wt-btn wt-btn-secondary text-sm !py-2">
                 {t("signIn")}
               </Link>
-              <Link href="/register" className="wt-btn wt-btn-primary text-sm !py-2">
+              <Link href="/register" className="wt-btn wt-btn-primary !bg-[#1f4d3a] text-sm !py-2 hover:!bg-[#173b2d]">
                 {t("join")}
               </Link>
             </>

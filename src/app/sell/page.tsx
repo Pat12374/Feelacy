@@ -67,8 +67,9 @@ export default async function SellHomePage() {
           ["/sell/orders", t("orders")],
           ["/sell/plan", t("planFees")],
           ["/sell/payouts", t("payouts")],
-          ["/sell/express", "WineTreff Express"],
+          ["/sell/express", "WineBloom Express"],
           ["/sell/assistant", "Listing Assistant"],
+          ["/sell/import", "Import existing products"],
         ].map(([href, label]) => (
           <Link key={href} href={href} className="wt-btn wt-btn-secondary !py-2">
             {label}

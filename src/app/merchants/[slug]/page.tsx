@@ -29,6 +29,7 @@ export default async function MerchantPage({
           images: { orderBy: { sortOrder: "asc" }, take: 1 },
           seller: { select: { displayName: true, slug: true } },
           region: true,
+          category: true,
         },
       },
     },

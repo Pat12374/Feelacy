@@ -4,8 +4,13 @@ import { Prisma } from "@prisma/client";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { finalizeSellerPayout, PLAN_DEFAULTS } from "@/lib/commerce/fees";
+import { applyStripeIdentityResult } from "@/lib/identity";
 
 export async function POST(req: NextRequest) {
+  const contentLength = Number(req.headers.get("content-length") ?? 0);
+  if (contentLength > 1_000_000) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
   if (!isStripeConfigured()) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
   }
@@ -18,6 +23,9 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.text();
+  if (body.length > 1_000_000) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, sig, secret);
@@ -45,10 +53,44 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
+    case "identity.verification_session.verified":
+    case "identity.verification_session.requires_input":
+    case "identity.verification_session.processing":
+    case "identity.verification_session.canceled":
+    case "identity.verification_session.redacted": {
+      let verification =
+        event.data.object as Stripe.Identity.VerificationSession;
+      if (verification.status === "verified") {
+        verification = await stripe.identity.verificationSessions.retrieve(
+          verification.id,
+          { expand: ["verified_outputs.dob"] },
+        );
+      }
+      await applyStripeIdentityResult(verification);
+      break;
+    }
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === "payment" && session.metadata?.orderId) {
         if (session.payment_status !== "paid") break;
+
+        const order = await prisma.order.findUnique({
+          where: { id: session.metadata.orderId },
+          include: { seller: { select: { stripeAccountId: true } } },
+        });
+        if (
+          !order ||
+          order.stripeCheckoutId !== session.id ||
+          !event.account ||
+          order.seller.stripeAccountId !== event.account
+        ) {
+          console.error("Checkout session ownership mismatch", {
+            orderId: session.metadata.orderId,
+            sessionId: session.id,
+            account: event.account,
+          });
+          break;
+        }
 
         const expectedPreTaxAmount = Number(session.metadata.expectedPreTaxAmount);
         const expectedCurrency = session.metadata.expectedCurrency?.toLowerCase();
@@ -90,7 +132,11 @@ export async function POST(req: NextRequest) {
           event.account ?? undefined,
         );
       }
-      if (session.mode === "subscription" && session.metadata?.sellerId) {
+      if (
+        session.mode === "subscription" &&
+        session.metadata?.sellerId &&
+        !event.account
+      ) {
         await applySubscriptionPlan(
           session.metadata.sellerId,
           session.metadata.planCode,
@@ -108,8 +154,34 @@ export async function POST(req: NextRequest) {
       const orderId = pi.metadata?.orderId;
       if (!orderId) break;
 
-      const order = await prisma.order.findUnique({ where: { id: orderId } });
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { seller: { select: { stripeAccountId: true } } },
+      });
       if (!order) break;
+      if (
+        !event.account ||
+        order.seller.stripeAccountId !== event.account ||
+        pi.currency.toLowerCase() !== order.currency.toLowerCase()
+      ) {
+        console.error("PaymentIntent ownership or currency mismatch", {
+          orderId,
+          account: event.account,
+          currency: pi.currency,
+        });
+        break;
+      }
+      const checkoutSessions = await stripe.checkout.sessions.list(
+        { payment_intent: pi.id, limit: 1 },
+        { stripeAccount: event.account },
+      );
+      if (checkoutSessions.data[0]?.id !== order.stripeCheckoutId) {
+        console.error("PaymentIntent is not bound to the stored Checkout session", {
+          orderId,
+          paymentIntentId: pi.id,
+        });
+        break;
+      }
       const preTaxAmount = order.productSubtotalCents + order.shippingCents;
       if (pi.amount_received < preTaxAmount) {
         console.error("PaymentIntent amount mismatch", {
@@ -196,20 +268,16 @@ export async function POST(req: NextRequest) {
     case "charge.refunded": {
       const charge = event.data.object as Stripe.Charge;
       const order = await prisma.order.findFirst({
-        where: {
-          OR: [
-            { id: charge.metadata?.orderId || "__missing__" },
-            { stripeChargeId: charge.id },
-          ],
-        },
-        select: { id: true },
+        where: { stripeChargeId: charge.id },
+        select: { id: true, seller: { select: { stripeAccountId: true } } },
       });
-      if (!order) break;
+      if (!order || !event.account || order.seller.stripeAccountId !== event.account) break;
       await applyRefund(order.id, charge.amount_refunded);
       break;
     }
     case "customer.subscription.deleted":
     case "customer.subscription.updated": {
+      if (event.account) break;
       const subscription = event.data.object as Stripe.Subscription;
       const sellerId = subscription.metadata?.sellerId;
       if (sellerId) {

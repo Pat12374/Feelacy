@@ -10,6 +10,10 @@ export default getRequestConfig(async () => {
 
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    // Seller catalog import tools deliberately use English until reviewed translations exist.
+    messages: {
+      ...(await import(`../../messages/${locale}.json`)).default,
+      catalogImport: (await import("../../messages/en.json")).default.catalogImport,
+    },
   };
 });

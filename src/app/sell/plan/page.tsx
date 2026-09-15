@@ -25,7 +25,7 @@ export default async function SellPlanPage({
       <h1 className="font-sans text-3xl font-semibold tracking-tight">Plan &amp; fees</h1>
       <p className="mt-2 max-w-2xl text-[var(--ink-soft)]">
         Hybrid subscription + commission. Payment-processing costs are deducted
-        from your proceeds and shown separately from WineTreff commission.
+        from your proceeds and shown separately from WineBloom commission.
         Buyers never pay marketplace fees.
       </p>
       {sp.upgraded && (
@@ -85,7 +85,7 @@ export default async function SellPlanPage({
               )}
               {plan.code === "ENTERPRISE" && !active && (
                 <p className="mt-5 text-sm text-[var(--ink-soft)]">
-                  Contact WineTreff admin for Enterprise onboarding.
+                  Contact WineBloom admin for Enterprise onboarding.
                 </p>
               )}
             </div>
@@ -96,7 +96,7 @@ export default async function SellPlanPage({
       <div className="mt-10 rounded-2xl border border-[var(--line)] bg-[rgba(31,61,50,0.06)] p-6 text-sm">
         <h3 className="font-semibold">Settlement formula</h3>
         <p className="mt-2 text-[var(--ink-soft)]">
-          Seller proceeds = (product + shipping + tax collected) − WineTreff
+          Seller proceeds = (product + shipping + tax collected) − WineBloom
           commission − payment-processing fee. Commission applies to product
           subtotal only. Processor fee estimated at 2.5% + €0.25; actual
           provider charge is recorded after capture.

@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "WineTreff",
+    "brand": "WineBloom",
     "search": "搜索",
     "sell": "出售",
     "fees": "费用",
@@ -29,11 +29,11 @@
     "becomeSeller": "成为卖家"
   },
   "footer": {
-    "tagline": "葡萄酒、烈酒、稀有瓶装、收藏品与礼物的一口价市场。买家永不支付 WineTreff 佣金。",
-    "copyright": "© {year} WineTreff。仅限 18 岁以上。请理性饮酒。"
+    "tagline": "葡萄酒、烈酒、稀有瓶装、收藏品与礼物的一口价市场。买家永不支付 WineBloom 佣金。",
+    "copyright": "© {year} WineBloom。仅限 18 岁以上。请理性饮酒。"
   },
   "home": {
-    "welcome": "欢迎来到 WineTreff",
+    "welcome": "欢迎来到 WineBloom",
     "headline": "来自可信商家的一口价酒款——葡萄酒、烈酒、稀有珍品、收藏品与礼物。先搜索，买你想要的，买家零佣金。",
     "searchPlaceholder": "搜索雷司令、斯佩塞、波亚克…",
     "searchCta": "搜索酒款",
@@ -74,7 +74,7 @@
     "forgotPassword": "忘记密码？",
     "newHere": "初次使用？",
     "createAccount": "创建账户",
-    "joinTitle": "加入 WineTreff",
+    "joinTitle": "加入 WineBloom",
     "joinHint": "创建买家账户。之后可开通卖家功能。",
     "name": "姓名",
     "alreadyRegistered": "已有账户？",
@@ -97,14 +97,14 @@
   },
   "age": {
     "title": "您是否已达法定年龄？",
-    "body": "您必须年满 18 岁才能在 WineTreff 浏览并购买酒精饮品。继续即表示您确认符合居住国的法定饮酒年龄。",
+    "body": "您必须年满 18 岁才能在 WineBloom 浏览并购买酒精饮品。继续即表示您确认符合居住国的法定饮酒年龄。",
     "confirm": "我已满 18 岁 — 进入"
   },
   "listing": {
     "soldBy": "卖家",
     "shipping": "运费 {amount}",
     "taxesHint": "适用时在结账显示税费/关税",
-    "noBuyerFees": "买家无需支付 WineTreff 佣金或市场费用。",
+    "noBuyerFees": "买家无需支付 WineBloom 佣金或市场费用。",
     "yourTotal": "今日应付：{amount}（价格 + 运费）",
     "buyNow": "立即购买 — 一口价",
     "signInToBuy": "登录后购买",
@@ -159,23 +159,24 @@
     "pendingReview": "提交审核",
     "active": "上架（需开通收款）",
     "unlisted": "未上架",
-    "openShop": "开设您的 WineTreff 店铺",
-    "openShopHint": "从免费 Starter 方案开始（10% 佣金）。随时可升级。买家永不支付 WineTreff 费用。",
+    "openShop": "开设您的 WineBloom 店铺",
+    "openShopHint": "从免费 Starter 方案开始（10% 佣金）。随时可升级。买家永不支付 WineBloom 费用。",
     "shopName": "店铺名称",
     "bio": "简介",
     "country": "国家代码",
     "createSeller": "创建卖家账户",
     "planTitle": "方案与费用",
-    "planHint": "订阅 + 佣金混合模式。支付处理费从卖家收入中扣除，并与 WineTreff 佣金分开披露。买家永不支付市场费用。",
+    "planHint": "订阅 + 佣金混合模式。支付处理费从卖家收入中扣除，并与 WineBloom 佣金分开披露。买家永不支付市场费用。",
     "current": "当前",
     "switchTo": "切换至 {plan}",
-    "enterpriseContact": "联系 WineTreff 管理员开通企业方案。",
+    "enterpriseContact": "联系 WineBloom 管理员开通企业方案。",
     "settlementFormula": "结算公式",
-    "sellerHome": "卖家首页"
+    "sellerHome": "卖家首页",
+    "quantity": "数量"
   },
   "fees": {
     "title": "费用",
-    "intro": "买卖双方规则清晰。WineTreff 不对买家收取市场佣金、溢价、交易费或基础 AI 费用。",
+    "intro": "买卖双方规则清晰。WineBloom 不对买家收取市场佣金、溢价、交易费或基础 AI 费用。",
     "buyersTitle": "买家支付内容",
     "buyerPrice": "展示的商品价格",
     "buyerShipping": "标明的运费",
@@ -185,7 +186,7 @@
     "monthly": "每月",
     "commission": "佣金",
     "processingTitle": "支付处理",
-    "processingBody": "从卖家收入中扣除，并与 WineTreff 佣金分开披露。预估：每笔 2.5% + €0.25。账本记录支付方实际费用。",
+    "processingBody": "从卖家收入中扣除，并与 WineBloom 佣金分开披露。预估：每笔 2.5% + €0.25。账本记录支付方实际费用。",
     "negotiated": "协商 3.5%–4.5%",
     "from": "起 {amount}"
   },
@@ -197,7 +198,7 @@
     "noPurchases": "暂无购买记录。"
   },
   "metadata": {
-    "title": "WineTreff — 精品酒款，一口价",
+    "title": "WineBloom — 精品酒款，一口价",
     "description": "葡萄酒、烈酒、稀有瓶装与饮品收藏市场。买家仅支付标价、运费及适用税费。"
   }
 }

@@ -1,6 +1,6 @@
-# WineTreff Express
+# FEELACY Express
 
-WineTreff Express orchestrates fulfillment between independent sellers, buyers, and approved third-party couriers. WineTreff never owns inventory or employs the courier.
+FEELACY Express orchestrates fulfillment between independent sellers, buyers, and approved third-party couriers. FEELACY never owns inventory or employs the courier.
 
 ## Safety defaults
 
@@ -14,6 +14,6 @@ WineTreff Express orchestrates fulfillment between independent sellers, buyers, 
 
 Run `npm run db:migrate`, `npm run db:seed`, sign in as an administrator, and open `/admin/express`. Enable the global pilot, allow a country, approve a seller and pickup location, then enable seller availability at `/sell/express`. The mock provider is deterministic and makes no network calls.
 
-The delivery webhook is `POST /api/webhooks/delivery/mock`, signed by an HMAC-SHA256 hex digest in `x-winetreff-signature`. In development only, `dev-mock` is accepted when no secret is configured.
+The delivery webhook is `POST /api/webhooks/delivery/mock`, signed by an HMAC-SHA256 hex digest in `x-feelacy-signature`. In development only, `dev-mock` is accepted when no secret is configured.
 
 DoorDash Drive and Uber Direct are intentionally not active: no approved credentials or contractual configuration existed in this repository. Add adapters behind server-only feature flags after provider review.

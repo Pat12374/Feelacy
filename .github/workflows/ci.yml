@@ -13,7 +13,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: winetreff_test
+          POSTGRES_DB: feelacy_test
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U postgres"
@@ -21,7 +21,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/winetreff_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/feelacy_test?schema=public
       AUTH_SECRET: ci-only-secret-that-is-long-enough
       AUTH_URL: http://127.0.0.1:3000
       NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
@@ -39,4 +39,3 @@ jobs:
       - run: npm run launch:check
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e -- --project=chromium
-

@@ -22,11 +22,23 @@ const body = Source_Sans_3({
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
   return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
     title: {
       default: t("title"),
-      template: "%s · WineTreff",
+      template: "%s · WineBloom",
     },
     description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      images: ["/og.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+      images: ["/og.png"],
+    },
   };
 }
 

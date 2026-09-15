@@ -9,25 +9,40 @@ type ListingCardProps = {
     vintage?: number | null;
     condition?: string | null;
     images: { url: string; alt?: string | null }[];
+    category?: { slug: string } | null;
     seller: { displayName: string; slug: string };
     region?: { name: string } | null;
     distanceMiles?: number;
   };
+  compact?: boolean;
+  showWineImages?: boolean;
+  hideImages?: boolean;
+  horizontal?: boolean;
 };
 
-export function ListingCard({ listing }: ListingCardProps) {
+export function ListingCard({
+  listing,
+  compact = false,
+  showWineImages = false,
+  hideImages = false,
+  horizontal = false,
+}: ListingCardProps) {
   const image = listing.images[0];
+  const showImage = !hideImages && Boolean(image) && (listing.category?.slug !== "wine" || showWineImages);
   return (
-    <Link href={`/listings/${listing.slug}`} className="wt-card-listing">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={
-          image?.url ??
-          "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80"
-        }
-        alt={image?.alt ?? listing.title}
-      />
-      <div className="grid gap-1">
+    <Link
+      href={`/listings/${listing.slug}`}
+      className={`wt-card-listing ${horizontal ? "!grid-cols-[minmax(0,1fr)_7.5rem] rounded-2xl border border-[var(--line)] bg-white/55 p-4 sm:!grid-cols-[minmax(0,1fr)_9rem]" : ""}`}
+    >
+      {showImage && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={image!.url}
+          alt={image?.alt ?? listing.title}
+          className={horizontal ? "order-2 !h-full !min-h-32 !aspect-auto" : compact ? "!aspect-[4/3]" : undefined}
+        />
+      )}
+      <div className={`grid gap-1 ${horizontal ? "order-1 content-center" : showImage ? "" : "min-h-52 content-end rounded-2xl border border-[var(--line)] bg-[rgba(31,61,50,.07)] p-6"} ${compact && !horizontal ? "px-1" : ""}`}>
         <p className="text-xs uppercase tracking-[0.14em] text-[var(--copper)]">
           {listing.region?.name ?? "Collection"}
           {listing.vintage ? ` · ${listing.vintage}` : ""}

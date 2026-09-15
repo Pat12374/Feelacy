@@ -1,4 +1,4 @@
-# Launch checklist — WineTreff
+# Launch checklist — WineBloom
 
 Use this before a production deploy. Local build/lint must already pass.
 
@@ -19,7 +19,7 @@ Copy `.env.example` → host secrets manager / Vercel env. Set:
 | `CRON_SECRET` | Yes | Strong secret for expired-reservation cleanup |
 | `MEDIA_*` | Yes | S3/R2-compatible bucket, public origin, and scoped upload credentials |
 | `RESEND_API_KEY` | Yes | Welcome + password-reset email |
-| `EMAIL_FROM` | Yes | Verified sender, e.g. `WineTreff <hello@domain.com>` |
+| `EMAIL_FROM` | Yes | Verified sender, e.g. `WineBloom <hello@domain.com>` |
 | `ALLOW_DEMO_CHECKOUT` | Must be unset/false | Hard-blocked in prod |
 | `ALLOW_LOCAL_PLAN_UPGRADE` | Must be unset/false | Hard-blocked in prod |
 | `ALLOW_PROD_SEED` | Must be unset | Seed refuses in production |
@@ -55,5 +55,16 @@ Run the staging, monitoring, backup/restore, and rollback procedures in `docs/OP
 
 - Counsel-reviewed terms, privacy, alcohol shipping rules
 - Age attestation is not full KYC; sellers use Stripe identity
-- Terms and seller onboarding clearly state that sellers—not WineTreff—are responsible for packing, shipping, tracking, delivery communication, and shipping-law compliance
+- Terms and seller onboarding clearly state that sellers—not WineBloom—are responsible for packing, shipping, tracking, delivery communication, and shipping-law compliance
 - Replace Unsplash placeholders with owned media before marketing launch
+
+## Catalog import launch gate
+
+The import/review workflow is implemented, but **imported alcohol publication is disabled**.
+Non-alcohol products require recorded, expiring administrator clearance before
+seller publication; review evidence must be real and operationally maintained.
+Require PostgreSQL migration verification, HTTPS malware scanner, MEDIA storage,
+cron scheduling and reviewed staged-data retention. Shopify/WooCommerce adapters,
+OAuth/API authorization, certified production synchronization adapters, and jurisdictional
+publication compliance are not launch-ready. Do not enable live connector controls
+with environment flags alone. See `OPERATIONS.md` and `seller-catalog-import.md`.

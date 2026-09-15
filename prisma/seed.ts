@@ -63,6 +63,7 @@ async function main() {
     { name: "Spirits", slug: "spirits" },
     { name: "Rare Bottles", slug: "rare-bottles" },
     { name: "Collectibles", slug: "collectibles" },
+    { name: "Gift Baskets", slug: "gift-baskets" },
     { name: "Gifts", slug: "gifts" },
     { name: "Accessories", slug: "accessories" },
     { name: "Flowers", slug: "flowers" },
@@ -95,7 +96,7 @@ async function main() {
 
   const producers = [
     { name: "Château Exemplar", slug: "chateau-exemplar" },
-    { name: "Weingut Treff", slug: "weingut-treff" },
+    { name: "Mosel Vale", slug: "mosel-vale" },
     { name: "Highland Cask Co.", slug: "highland-cask-co" },
     { name: "Maison Céleste", slug: "maison-celeste" },
   ];
@@ -110,39 +111,42 @@ async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@winetreff.local" },
+    where: { email: "admin@feelacy.local" },
     create: {
-      email: "admin@winetreff.local",
-      name: "WineTreff Admin",
+      email: "admin@feelacy.local",
+      name: "WineBloom Admin",
       passwordHash,
       role: "ADMIN",
       ageVerifiedAt: new Date(),
+      ageVerificationStatus: "VERIFIED",
     },
-    update: { role: "ADMIN", ageVerifiedAt: new Date(), passwordHash },
+    update: { role: "ADMIN", ageVerifiedAt: new Date(), ageVerificationStatus: "VERIFIED", passwordHash },
   });
 
   const sellerUser = await prisma.user.upsert({
-    where: { email: "seller@winetreff.local" },
+    where: { email: "seller@feelacy.local" },
     create: {
-      email: "seller@winetreff.local",
+      email: "seller@feelacy.local",
       name: "Cellar Merchant",
       passwordHash,
       role: "SELLER",
       ageVerifiedAt: new Date(),
+      ageVerificationStatus: "VERIFIED",
     },
-    update: { role: "SELLER", ageVerifiedAt: new Date(), passwordHash },
+    update: { role: "SELLER", ageVerifiedAt: new Date(), ageVerificationStatus: "VERIFIED", passwordHash },
   });
 
   const buyer = await prisma.user.upsert({
-    where: { email: "buyer@winetreff.local" },
+    where: { email: "buyer@feelacy.local" },
     create: {
-      email: "buyer@winetreff.local",
+      email: "buyer@feelacy.local",
       name: "Curious Buyer",
       passwordHash,
       role: "BUYER",
       ageVerifiedAt: new Date(),
+      ageVerificationStatus: "VERIFIED",
     },
-    update: { ageVerifiedAt: new Date(), passwordHash },
+    update: { ageVerifiedAt: new Date(), ageVerificationStatus: "VERIFIED", passwordHash },
   });
 
   const starter = await prisma.sellerPlan.findUniqueOrThrow({
@@ -150,7 +154,7 @@ async function main() {
   });
 
   const seller = await prisma.sellerProfile.upsert({
-    where: { userId: sellerUser.id },
+    where: { slug: "rhein-cellars" },
     create: {
       userId: sellerUser.id,
       displayName: "Rhein Cellars",
@@ -163,8 +167,11 @@ async function main() {
       subscription: { create: { status: "ACTIVE" } },
     },
     update: {
+      userId: sellerUser.id,
       displayName: "Rhein Cellars",
       bio: "Private merchant specializing in German Riesling and select Bordeaux.",
+      planId: starter.id,
+      commissionBps: PLAN_DEFAULTS.STARTER.commissionBps,
     },
   });
   const seededPickup = await prisma.pickupLocation.findFirst({ where: { sellerId: seller.id, label: "Rhein Cellars pickup" } });
@@ -189,8 +196,8 @@ async function main() {
   const speyside = await prisma.region.findUniqueOrThrow({
     where: { slug: "speyside" },
   });
-  const weingut = await prisma.producer.findUniqueOrThrow({
-    where: { slug: "weingut-treff" },
+  const moselVale = await prisma.producer.findUniqueOrThrow({
+    where: { slug: "mosel-vale" },
   });
   const chateau = await prisma.producer.findUniqueOrThrow({
     where: { slug: "chateau-exemplar" },
@@ -201,15 +208,15 @@ async function main() {
 
   const listings = [
     {
-      title: "Weingut Treff Riesling Spätlese 2018",
-      slug: "weingut-treff-riesling-spatlese-2018",
+      title: "Mosel Vale Riesling Spätlese 2018",
+      slug: "mosel-vale-riesling-spatlese-2018",
       description:
         "Cellar-kept Mosel Spätlese with bright slate minerality and stone-fruit depth. Fixed-price listing from a verified merchant.",
       priceCents: 4200,
       shippingCents: 890,
       categoryId: wine.id,
       regionId: mosel.id,
-      producerId: weingut.id,
+      producerId: moselVale.id,
       vintage: 2018,
       abv: 8.5,
       bottleSizeMl: 750,

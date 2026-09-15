@@ -26,7 +26,7 @@ export class MockDeliveryProvider implements DeliveryProvider {
   async cancelDelivery(id: string) { const value = deliveries.get(id); if (value) deliveries.set(id, { ...value, status: "cancelled" }); }
   async createReturn(id: string) { const value = await this.getDelivery(id); const returned = { ...value, status: "return_in_transit" as const }; deliveries.set(id, returned); return returned; }
   verifyWebhook(headers: Headers, rawBody: string) {
-    const secret = process.env.DELIVERY_MOCK_WEBHOOK_SECRET; const signature = headers.get("x-winetreff-signature");
+    const secret = process.env.DELIVERY_MOCK_WEBHOOK_SECRET; const signature = headers.get("x-feelacy-signature");
     if (!secret || !signature) return process.env.NODE_ENV !== "production" && signature === "dev-mock";
     const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
     const a = Buffer.from(signature); const b = Buffer.from(expected); return a.length === b.length && timingSafeEqual(a, b);

@@ -12,7 +12,7 @@ export async function checkDeliveryEligibility(input: DeliveryQuoteInput) {
     prisma.sellerDeliverySettings.findUnique({ where: { sellerId: input.sellerId } }),
     prisma.pickupLocation.findFirst({ where: { id: input.pickupLocationId, sellerId: input.sellerId, approved: true, active: true } }),
   ]);
-  if (!global?.enabled) return { eligible: false, reason: "WineTreff Express is not available in this area yet." };
+  if (!global?.enabled) return { eligible: false, reason: "WineBloom Express is not available in this area yet." };
   if (!seller || seller.adminApprovalStatus !== "APPROVED" || !seller.expressEnabled || !seller.acceptingLocalOrders) return { eligible: false, reason: "This seller is not currently accepting Express requests." };
   if (!pickup) return { eligible: false, reason: "The seller does not have an approved pickup location." };
   if (seller.closedUntil && seller.closedUntil > new Date()) return { eligible: false, reason: "The seller is temporarily closed." };
@@ -81,5 +81,5 @@ export async function applyProviderEvent(providerConfigId: string, event: Normal
 
 export function safeFailureExplanation(category: string) {
   const known: Record<string, string> = { recipient_unavailable: "The recipient was unavailable. Age-restricted orders will be returned to the seller.", id_invalid: "The recipient’s identification could not be verified.", recipient_underage: "The recipient was not eligible to accept this age-restricted order.", restricted_address: "The courier could not complete delivery at this address.", seller_not_ready: "The seller was not ready when the courier arrived.", damaged_package: "The package was reported damaged.", courier_cancellation: "The courier cancelled the delivery.", provider_cancellation: "The provider cancelled the delivery.", delivery_timeout: "The delivery could not be completed in the available time." };
-  return known[category] ?? "The delivery could not be completed. WineTreff support will review the outcome.";
+  return known[category] ?? "The delivery could not be completed. WineBloom support will review the outcome.";
 }

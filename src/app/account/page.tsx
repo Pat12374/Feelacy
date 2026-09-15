@@ -25,6 +25,9 @@ export default async function AccountPage() {
     }),
   ]);
   if (!user) return null;
+  const ageVerified = Boolean(
+    user.ageVerifiedAt && user.ageVerificationStatus === "VERIFIED",
+  );
 
   return (
     <div className="wt-container py-10">
@@ -32,19 +35,19 @@ export default async function AccountPage() {
         {t("title")}
       </p>
       <h1 className="mt-2 font-sans text-4xl font-semibold tracking-tight">
-        Welcome, {user.name?.trim() || "WineTreff member"}
+        Welcome, {user.name?.trim() || "WineBloom member"}
       </h1>
-      <p className="mt-2 text-[var(--ink-soft)]">Your WineTreff profile and marketplace access.</p>
+      <p className="mt-2 text-[var(--ink-soft)]">Your WineBloom profile and marketplace access.</p>
 
       <section className="mt-8 grid gap-4 rounded-2xl border border-[var(--line)] bg-white/50 p-6 sm:grid-cols-2">
         <div><p className="text-sm text-[var(--ink-soft)]">Name</p><p className="font-semibold">{user.name || "Not provided"}</p></div>
         <div><p className="text-sm text-[var(--ink-soft)]">Email</p><p className="font-semibold">{user.email}</p></div>
         <div><p className="text-sm text-[var(--ink-soft)]">Account role</p><p className="font-semibold">{user.role}</p></div>
-        <div><p className="text-sm text-[var(--ink-soft)]">Age eligibility</p><p className={`font-semibold ${user.ageVerifiedAt ? "text-[var(--ok)]" : "text-[var(--danger)]"}`}>{user.ageVerifiedAt ? `Confirmed ${user.ageVerifiedAt.toLocaleDateString()}` : "Action required before buying or selling"}</p></div>
+        <div><p className="text-sm text-[var(--ink-soft)]">Age eligibility</p><p className={`font-semibold ${ageVerified ? "text-[var(--ok)]" : "text-[var(--danger)]"}`}>{ageVerified ? `Verified ${user.ageVerifiedAt!.toLocaleDateString()}` : user.ageVerificationStatus === "PROCESSING" ? "Stripe verification is processing" : "Action required before buying or selling"}</p></div>
         {user.sellerProfile && <><div><p className="text-sm text-[var(--ink-soft)]">Seller profile</p><p className="font-semibold">{user.sellerProfile.displayName}</p></div><div><p className="text-sm text-[var(--ink-soft)]">Seller plan</p><p className="font-semibold">{user.sellerProfile.plan.name}</p></div></>}
       </section>
 
-      {!user.ageVerifiedAt && <div className="mt-5 rounded-2xl border border-[var(--copper)] bg-[rgba(176,138,90,.12)] p-5"><h2 className="font-display text-xl">Complete the age gate</h2><p className="mt-1 text-sm text-[var(--ink-soft)]">WineTreff requires age confirmation before purchasing alcohol or opening a seller profile.</p><Link href="/age-gate?next=/account" className="wt-btn wt-btn-primary mt-4">Confirm eligibility</Link></div>}
+      {!ageVerified && <div className="mt-5 rounded-2xl border border-[var(--copper)] bg-[rgba(184,120,32,.12)] p-5"><h2 className="font-display text-xl">Complete age verification</h2><p className="mt-1 text-sm text-[var(--ink-soft)]">WineBloom requires Stripe Identity document verification before purchasing alcohol or opening a seller profile.</p><Link href="/age-gate?next=/account" className="wt-btn wt-btn-primary mt-4">Verify age</Link></div>}
 
       <div className="mt-8 flex flex-wrap gap-3">
         {user.sellerProfile ? <Link href="/sell/listings/new" className="wt-btn wt-btn-primary">List a product</Link> : <Link href="/sell/onboarding" className="wt-btn wt-btn-primary">Become a seller</Link>}

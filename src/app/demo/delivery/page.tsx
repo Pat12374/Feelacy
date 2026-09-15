@@ -31,7 +31,7 @@ export default async function DeliveryDemoPage() {
         Privacy-safe local demonstration
       </p>
       <h1 className="mt-2 font-sans text-4xl font-semibold tracking-tight">
-        WineTreff Express tracking
+        WineBloom Express tracking
       </h1>
       <p className="mt-2 max-w-3xl text-[var(--ink-soft)]">
         This sandbox view contains no buyer address or personal information. The

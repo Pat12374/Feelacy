@@ -12,9 +12,11 @@ export async function requireAgeVerified() {
   const session = await requireSession();
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { ageVerifiedAt: true, role: true },
+    select: { ageVerifiedAt: true, ageVerificationStatus: true, role: true },
   });
-  if (!user?.ageVerifiedAt) redirect("/age-gate");
+  if (!user?.ageVerifiedAt || user.ageVerificationStatus !== "VERIFIED") {
+    redirect("/age-gate");
+  }
   return session;
 }
 

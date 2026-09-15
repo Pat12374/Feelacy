@@ -1,4 +1,4 @@
-# WineTreff — Product & Engineering Plan
+# WineBloom — Product & Engineering Plan
 
 **Status:** Approved defaults (2026-08-18)  
 **Product:** Original fixed-price marketplace for wines, spirits, rare bottles, and beverage-related collectibles.  
@@ -16,9 +16,9 @@
 | Hosting target | Vercel (app) + managed Postgres (Neon or Supabase) + R2/S3 for media |
 | Market | DACH/EU-first, EUR primary, 18+ age gate |
 | Sellers | Private collectors and commercial merchants on the same plan ladder |
-| Fulfillment | **Seller-managed only** — WineTreff does not pack, ship, warehouse, or deliver orders |
+| Fulfillment | **Seller-managed only** — WineBloom does not pack, ship, warehouse, or deliver orders |
 | Listing model | Fixed price only — no auctions, bids, reserves, make-an-offer, or gift cards |
-| Buyer fees | **None** from WineTreff (no commission, premium, transaction fee, Buy Again, search, or basic AI fees) |
+| Buyer fees | **None** from WineBloom (no commission, premium, transaction fee, Buy Again, search, or basic AI fees) |
 | Monetization | Seller subscription + completed-sale commission; payment-processing costs deducted from seller proceeds and disclosed separately |
 
 ---
@@ -37,7 +37,7 @@
 - Subscriptions billed via Stripe Billing to the seller.
 - Active plan stores `commissionBps` (e.g. 1000 = 10%) on the seller account; Enterprise rates are admin-set within 350–450 bps.
 - Commission applies to the **listing/product subtotal** (ex-shipping). Shipping is pass-through to the seller. Tax/excise/customs lines follow the tax configuration (collected from buyer; remittance policy documented per jurisdiction).
-- Each seller is solely responsible for packing, dispatch, carrier selection, tracking, delivery communication, and compliance with the shipping rules applicable to their sale. WineTreff provides marketplace records and destination controls, not fulfillment services.
+- Each seller is solely responsible for packing, dispatch, carrier selection, tracking, delivery communication, and compliance with the shipping rules applicable to their sale. WineBloom provides marketplace records and destination controls, not fulfillment services.
 
 ### Buyer pays only
 
@@ -49,16 +49,16 @@
 
 ```
 buyer_charge     = product + shipping + tax_lines
-winetreff_fee    = product * commission_rate     // WineTreff commission only
+feelacy_fee      = product * commission_rate     // WineBloom commission only
 processor_fee    = actual Stripe fee (BalanceTransaction)
                    // planning estimate: 2.5% + €0.25 of buyer_charge
-seller_proceeds  = buyer_charge - winetreff_fee - processor_fee
-                   // minus any tax amount WineTreff remits on seller's behalf
+seller_proceeds  = buyer_charge - feelacy_fee - processor_fee
+                   // minus any tax amount WineBloom remits on seller's behalf
 ```
 
-**Disclosure:** Order/seller statements show three separate lines: product+shipping gross, WineTreff commission, payment-processing fee (estimate at checkout preview; actual after settlement).
+**Disclosure:** Order/seller statements show three separate lines: product+shipping gross, WineBloom commission, payment-processing fee (estimate at checkout preview; actual after settlement).
 
-**Stripe mechanics:** Direct charges on the seller’s Connect Express account with `application_fee_amount = winetreff_fee`. Stripe’s processing fee then lands on the connected account (seller), matching “deduct from seller proceeds.” Ledger stores estimated fee at intent creation and actual fee from webhook/`BalanceTransaction`.
+**Stripe mechanics:** Direct charges on the seller’s Connect Express account with `application_fee_amount = feelacy_fee`. Stripe’s processing fee then lands on the connected account (seller), matching “deduct from seller proceeds.” Ledger stores estimated fee at intent creation and actual fee from webhook/`BalanceTransaction`.
 
 ---
 
@@ -77,7 +77,7 @@ seller_proceeds  = buyer_charge - winetreff_fee - processor_fee
 9. **Basics** — age gate, legal pages stubs, email transactional hooks, admin moderation (list/unlist)  
 10. **Seed & docs** — sample listings, env template, README, runbook  
 
-**Fulfillment boundary:** Phase 1 does not include WineTreff-operated warehousing, packing, shipping, carrier purchasing, or delivery. Sellers fulfill their own orders. Marketplace features may record shipping charges, eligible destinations, order status, and seller-provided tracking details.
+**Fulfillment boundary:** Phase 1 does not include WineBloom-operated warehousing, packing, shipping, carrier purchasing, or delivery. Sellers fulfill their own orders. Marketplace features may record shipping charges, eligible destinations, order status, and seller-provided tracking details.
 
 ### Phase 2 — Discovery surface (schema ready in Phase 1; UI after foundation)
 
@@ -143,17 +143,17 @@ flowchart TB
 ```mermaid
 sequenceDiagram
   participant Buyer
-  participant WineTreff
+  participant WineBloom
   participant Stripe
   participant Seller
 
-  Buyer->>WineTreff: Pay displayed total
-  WineTreff->>Stripe: Direct charge on Seller Connect account
-  Note over Stripe: application_fee = WineTreff commission
+  Buyer->>WineBloom: Pay displayed total
+  WineBloom->>Stripe: Direct charge on Seller Connect account
+  Note over Stripe: application_fee = WineBloom commission
   Stripe-->>Seller: Net after Stripe fee and application fee
-  Stripe-->>WineTreff: application_fee
-  Stripe-->>WineTreff: webhook BalanceTransaction
-  WineTreff->>WineTreff: Ledger actual processor fee vs estimate
+  Stripe-->>WineBloom: application_fee
+  Stripe-->>WineBloom: webhook BalanceTransaction
+  WineBloom->>WineBloom: Ledger actual processor fee vs estimate
 ```
 
 ---
@@ -178,7 +178,7 @@ Core entities:
 **Invariants**
 
 - Listing `saleType = FIXED` only (column or enum with single value; no auction fields).  
-- Buyer invoice lines never include WineTreff commission or “platform fee.”  
+- Buyer invoice lines never include WineBloom commission or “platform fee.”  
 - Settlement always stores commission and processor fee as separate columns.  
 
 ---
@@ -228,17 +228,17 @@ On `payment_intent.succeeded` / `charge.succeeded`, resolve `BalanceTransaction.
 ## 8. Compliance & trust (MVP bar)
 
 - Hard 18+ gate before browse/checkout; store affirmation timestamp.  
-- Seller fee page: clear table of plans, commissions, and that buyers do not pay WineTreff fees.  
+- Seller fee page: clear table of plans, commissions, and that buyers do not pay WineBloom fees.  
 - Checkout UI shows buyer total components only (price, shipping, tax).  
 - Alcohol shipping: sellers declare ship-to countries; checkout blocks unsupported destinations.  
-- Sellers are responsible for fulfillment and shipping compliance; WineTreff does not take custody of goods or act as the carrier.  
+- Sellers are responsible for fulfillment and shipping compliance; WineBloom does not take custody of goods or act as the carrier.  
 - No legal advice in product copy; link to counsel-reviewed terms placeholders.  
 
 ---
 
 ## 9. Design direction
 
-Original WineTreff brand — not AutoScout24 clone:
+Original WineBloom brand — not AutoScout24 clone:
 
 - Search-first composition; brand as hero signal on landing.  
 - Full-bleed atmospheric hero (cellar / bottle photography placeholders), then search.  
@@ -292,7 +292,7 @@ Phase 2 follows only after Phase 1 checkout and settlement are verified end-to-e
 
 ## 12. Acceptance criteria (Phase 1 done)
 
-- Buyer can find a listing via search, open detail, pay fixed price; receipt shows **no** WineTreff buyer fee.  
+- Buyer can find a listing via search, open detail, pay fixed price; receipt shows **no** WineBloom buyer fee.  
 - Seller on Starter sees 10% commission and separate processor fee on settlement; upgrading to Merchant updates commission to 7% for subsequent sales.  
 - Enterprise seller can be set to e.g. 4.0% by admin.  
 - Payment-processing line uses 2.5%+€0.25 for previews and Stripe actual fee post-capture.  
@@ -310,3 +310,20 @@ Phase 2 follows only after Phase 1 checkout and settlement are verified end-to-e
 | Commission disputes | Immutable `Settlement` rows + audit log |
 | Scope creep into Phase 2 | Phase 2 tables only; no UI until foundation green |
 | Search quality | Start with Postgres FTS + facets; upgrade path documented |
+
+## Seller catalog import (2026-09-07)
+
+`/sell/import` extends the assistant's existing `ListingDraft` workflow with CSV,
+XLSX, authorized website structured-data extraction, saved column mappings,
+persisted batch jobs, seller-scoped duplicate resolution and editable review.
+Approval only creates/updates ordinary private DRAFT listings. `/sell/assistant`
+links to the same workflow; it no longer has a separate 100-row parser.
+
+Production-safe Shopify/WooCommerce adapter boundaries and synchronization domain
+logic are present; live connections remain unavailable. **Alcohol import publication is
+blocked until jurisdictional compliance integrations exist**. Non-alcohol products
+require recorded, expiring administrator clearance before seller publication.
+Connection permissions, history and conflict review are implemented; production
+scheduled/live adapters are not launched. See
+[seller instructions](seller-catalog-import.md) for exact supported behavior and
+[operations](OPERATIONS.md) for deployment dependencies.

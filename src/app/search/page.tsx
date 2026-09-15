@@ -5,6 +5,7 @@ import { ListingCard } from "@/components/listing-card";
 import { VoiceSearchInput } from "@/components/voice-search-input";
 import { marketplaceCategory } from "@/lib/marketplace-categories";
 import { FulfillmentSearchControls } from "@/components/fulfillment-search-controls";
+import { demoListingImages } from "@/lib/demo-listing-images";
 
 export async function generateMetadata() {
   const t = await getTranslations("search");
@@ -87,7 +88,17 @@ export default async function SearchPage({
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {result.listings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
+          <ListingCard
+            key={listing.id}
+            horizontal
+            showWineImages
+            listing={{
+              ...listing,
+              images: demoListingImages[listing.slug]
+                ? [{ url: demoListingImages[listing.slug], alt: listing.title }]
+                : listing.images,
+            }}
+          />
         ))}
       </div>
       {result.listings.length === 0 && (

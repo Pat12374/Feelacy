@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { AuthError } from "next-auth";
+import type Stripe from "stripe";
 import { z } from "zod";
 import { cookies, headers } from "next/headers";
 import { signIn, signOut, auth } from "@/lib/auth";
@@ -12,6 +13,7 @@ import { slugify } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { AGE_COOKIE } from "@/lib/security/cookies";
+import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import {
   clientIpFromHeaders,
   rateLimit,
@@ -53,11 +55,11 @@ export async function registerAction(formData: FormData): Promise<void> {
   }
 
   const email = parsed.data.email.toLowerCase();
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
   const existing = await prisma.user.findUnique({ where: { email } });
 
   // Avoid email enumeration: same redirect path whether or not the email exists.
   if (!existing) {
-    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
     const user = await prisma.user.create({
       data: {
         name: parsed.data.name,
@@ -239,7 +241,7 @@ export async function resetPasswordAction(formData: FormData): Promise<void> {
   await prisma.$transaction([
     prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
     }),
     prisma.verificationToken.delete({
       where: { identifier_token: { identifier, token: tokenHash } },
@@ -250,27 +252,98 @@ export async function resetPasswordAction(formData: FormData): Promise<void> {
 }
 
 export async function verifyAgeAction(formData?: FormData): Promise<void> {
-  const jar = await cookies();
-  jar.set(AGE_COOKIE, "1", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: isProduction(),
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
-
   const session = await auth();
-  if (session?.user?.id) {
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { ageVerifiedAt: new Date() },
-    });
-  }
-
   const next = String(formData?.get("next") ?? "/search");
   const safeNext =
     next.startsWith("/") && !next.startsWith("//") ? next : "/search";
-  redirect(safeNext);
+
+  if (!session?.user?.id) {
+    redirect(`/login?next=${encodeURIComponent(`/age-gate?next=${safeNext}`)}`);
+  }
+  const ip = clientIpFromHeaders(await headers());
+  const limited = rateLimit({
+    key: `identity:${session.user.id}:${ip}`,
+    limit: 10,
+    windowMs: 24 * 60 * 60 * 1000,
+  });
+  if (!limited.ok) {
+    redirect(`/age-gate?error=rate&next=${encodeURIComponent(safeNext)}`);
+  }
+  if (!isStripeConfigured()) {
+    redirect(
+      `/age-gate?error=unavailable&next=${encodeURIComponent(safeNext)}`,
+    );
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      email: true,
+      ageVerificationStatus: true,
+      stripeIdentityVerificationId: true,
+    },
+  });
+  if (!user) redirect("/login");
+
+  if (user.ageVerificationStatus === "VERIFIED") {
+    const jar = await cookies();
+    jar.set(AGE_COOKIE, "1", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProduction(),
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    redirect(safeNext);
+  }
+
+  let verification: Stripe.Identity.VerificationSession | null = null;
+  if (user.stripeIdentityVerificationId) {
+    verification = await getStripe().identity.verificationSessions.retrieve(
+      user.stripeIdentityVerificationId,
+    );
+  }
+
+  if (
+    !verification ||
+    !["requires_input", "processing"].includes(verification.status)
+  ) {
+    const returnUrl = new URL(
+      `/api/identity/return?next=${encodeURIComponent(safeNext)}`,
+      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    ).toString();
+    verification = await getStripe().identity.verificationSessions.create(
+      {
+        type: "document",
+        client_reference_id: session.user.id,
+        provided_details: { email: user.email },
+        return_url: returnUrl,
+      },
+      {
+        idempotencyKey: `age-verification-${session.user.id}-${user.stripeIdentityVerificationId ?? "initial"}`,
+      },
+    );
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        stripeIdentityVerificationId: verification.id,
+        ageVerificationStatus: "REQUIRES_INPUT",
+        ageVerifiedAt: null,
+      },
+    });
+  }
+
+  if (verification.status === "processing") {
+    redirect(
+      `/age-gate?status=processing&next=${encodeURIComponent(safeNext)}`,
+    );
+  }
+  if (!verification.url) {
+    redirect(
+      `/age-gate?error=unavailable&next=${encodeURIComponent(safeNext)}`,
+    );
+  }
+  redirect(verification.url);
 }
 
 const sellerOnboardSchema = z.object({
@@ -286,9 +359,11 @@ export async function createSellerProfileAction(formData: FormData): Promise<voi
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { ageVerifiedAt: true },
+    select: { ageVerifiedAt: true, ageVerificationStatus: true },
   });
-  if (!user?.ageVerifiedAt) redirect("/age-gate");
+  if (!user?.ageVerifiedAt || user.ageVerificationStatus !== "VERIFIED") {
+    redirect("/age-gate");
+  }
 
   const parsed = sellerOnboardSchema.safeParse({
     displayName: formData.get("displayName"),

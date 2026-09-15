@@ -1,4 +1,4 @@
-# WineTreff fee rules (source of truth)
+# WineBloom fee rules (source of truth)
 
 ## Buyers
 
@@ -8,7 +8,7 @@ Buyers pay only:
 2. Stated shipping  
 3. Applicable taxes, excise duties, and customs charges  
 
-Buyers do **not** pay: marketplace commissions, buyer premiums, WineTreff transaction fees, Buy Again fees, search fees, or basic WineTreff AI fees.
+Buyers do **not** pay: marketplace commissions, buyer premiums, WineBloom transaction fees, Buy Again fees, search fees, or basic WineBloom AI fees.
 
 ## Sellers — subscription + commission
 
@@ -24,7 +24,7 @@ Commission is calculated on the **product subtotal**, not on shipping.
 ## Payment processing (seller-side)
 
 - Deducted from seller proceeds.  
-- Disclosed separately from WineTreff commission.  
+- Disclosed separately from WineBloom commission.  
 - Planning estimate: **2.5% + €0.25** per payment.  
 - Ledger records the **payment provider’s actual charge** after settlement.
 
@@ -32,7 +32,7 @@ Commission is calculated on the **product subtotal**, not on shipping.
 
 ```
 buyer_charge    = product + shipping + tax_lines
-winetreff_fee   = product × plan_commission
+feelacy_fee     = product × plan_commission
 processor_fee   = actual provider fee (estimate before capture)
-seller_net      = buyer_charge − winetreff_fee − processor_fee (− tax remitted by platform if applicable)
+seller_net      = buyer_charge − feelacy_fee − processor_fee (− tax remitted by platform if applicable)
 ```

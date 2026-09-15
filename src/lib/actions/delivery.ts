@@ -8,9 +8,13 @@ import { requireAdmin, requireSeller } from "@/lib/session";
 import { dispatchDelivery, transitionDelivery } from "@/lib/delivery/service";
 import { createAndStoreQuote } from "@/lib/delivery/service";
 import { requireAgeVerified } from "@/lib/session";
+import { headers } from "next/headers";
+import { clientIpFromHeaders, rateLimit } from "@/lib/security/rate-limit";
 
 export async function requestDeliveryQuoteAction(formData: FormData) {
-  await requireAgeVerified();
+  const session = await requireAgeVerified();
+  const limited = rateLimit({ key: `delivery-quote:${session.user.id}:${clientIpFromHeaders(await headers())}`, limit: 20, windowMs: 60 * 60 * 1000 });
+  if (!limited.ok) redirect("/search?error=rate");
   const listingId = String(formData.get("listingId")); const fulfillmentType = String(formData.get("fulfillmentType")) as "EXPRESS" | "SCHEDULED";
   const listing = await prisma.listing.findFirst({ where: { id: listingId, status: "ACTIVE", quantity: { gt: 0 } }, include: { seller: { include: { pickupLocations: { where: { approved: true, active: true }, take: 1 } } }, category: true } });
   const pickup = listing?.seller.pickupLocations[0]; if (!listing || !pickup) redirect(`/checkout/${listingId}?error=unavailable`);
@@ -39,7 +43,10 @@ export async function addPickupLocationAction(formData: FormData) {
 }
 
 export async function sellerDeliveryAction(formData: FormData) {
-  const { seller } = await requireSeller(); const deliveryId = String(formData.get("deliveryId")); const action = String(formData.get("intent"));
+  const { seller } = await requireSeller();
+  const parsed = z.object({ deliveryId: z.string().min(1), intent: z.enum(["accept", "reject", "prepare", "ready", "dispatch"]) }).safeParse({ deliveryId: formData.get("deliveryId"), intent: formData.get("intent") });
+  if (!parsed.success) redirect("/sell/express?error=invalid");
+  const { deliveryId, intent: action } = parsed.data;
   const delivery = await prisma.delivery.findFirst({ where: { id: deliveryId, sellerId: seller.id }, include: { order: true } }); if (!delivery) redirect("/sell/express?error=notfound");
   if (action === "accept") await transitionDelivery(delivery.id, "seller_accepted", "seller");
   else if (action === "reject") { await transitionDelivery(delivery.id, "seller_rejected", "seller"); await transitionDelivery(delivery.id, "cancelled", "system", "Seller could not fulfill; support review required."); }
@@ -51,10 +58,19 @@ export async function sellerDeliveryAction(formData: FormData) {
 }
 
 export async function adminExpressAction(formData: FormData) {
-  const session = await requireAdmin(); const intent = String(formData.get("intent"));
-  if (intent === "global") await prisma.expressConfiguration.upsert({ where: { id: "global" }, create: { enabled: formData.get("enabled") === "on", alcoholEnabled: formData.get("alcoholEnabled") === "on", allowedCountriesCsv: String(formData.get("allowedCountries") || "") }, update: { enabled: formData.get("enabled") === "on", alcoholEnabled: formData.get("alcoholEnabled") === "on", allowedCountriesCsv: String(formData.get("allowedCountries") || "") } });
-  if (intent === "seller") await prisma.sellerDeliverySettings.update({ where: { sellerId: String(formData.get("sellerId")) }, data: { adminApprovalStatus: String(formData.get("approval")), alcoholApprovalStatus: String(formData.get("alcoholApproval")) } });
-  if (intent === "pickup") await prisma.pickupLocation.update({ where: { id: String(formData.get("pickupId")) }, data: { approved: formData.get("approved") === "true" } });
+  const session = await requireAdmin(); const intent = z.enum(["global", "seller", "pickup"]).parse(formData.get("intent"));
+  if (intent === "global") {
+    const allowedCountriesCsv = String(formData.get("allowedCountries") || "").split(",").map(x => x.trim().toUpperCase()).filter(x => /^[A-Z]{2}$/.test(x)).join(",");
+    await prisma.expressConfiguration.upsert({ where: { id: "global" }, create: { enabled: formData.get("enabled") === "on", alcoholEnabled: formData.get("alcoholEnabled") === "on", allowedCountriesCsv }, update: { enabled: formData.get("enabled") === "on", alcoholEnabled: formData.get("alcoholEnabled") === "on", allowedCountriesCsv } });
+  }
+  if (intent === "seller") {
+    const data = z.object({ sellerId: z.string().min(1), approval: z.enum(["PENDING", "APPROVED", "SUSPENDED"]), alcoholApproval: z.enum(["NOT_APPROVED", "APPROVED", "SUSPENDED"]) }).parse({ sellerId: formData.get("sellerId"), approval: formData.get("approval"), alcoholApproval: formData.get("alcoholApproval") });
+    await prisma.sellerDeliverySettings.update({ where: { sellerId: data.sellerId }, data: { adminApprovalStatus: data.approval, alcoholApprovalStatus: data.alcoholApproval } });
+  }
+  if (intent === "pickup") {
+    const data = z.object({ pickupId: z.string().min(1), approved: z.enum(["true", "false"]) }).parse({ pickupId: formData.get("pickupId"), approved: formData.get("approved") });
+    await prisma.pickupLocation.update({ where: { id: data.pickupId }, data: { approved: data.approved === "true" } });
+  }
   await prisma.auditLog.create({ data: { actorId: session.user.id, action: "EXPRESS_ADMIN_CONFIGURATION", meta: JSON.stringify({ intent }) } });
   revalidatePath("/admin/express"); redirect("/admin/express?ok=1");
 }

@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "WineTreff",
+    "brand": "WineBloom",
     "search": "Search",
     "sell": "Sell",
     "fees": "Fees",
@@ -29,15 +29,15 @@
     "becomeSeller": "Become a seller"
   },
   "footer": {
-    "tagline": "Fixed-price marketplace for wines, spirits, rare bottles, collectibles, and gifts. Buyers never pay WineTreff commissions.",
-    "copyright": "© {year} WineTreff. 18+ only. Drink responsibly."
+    "tagline": "Fixed-price marketplace for wines, spirits, rare bottles, collectibles, and gifts. Buyers never pay WineBloom commissions.",
+    "copyright": "© {year} WineBloom. 18+ only. Drink responsibly."
   },
   "home": {
-    "welcome": "Welcome to WineTreff",
-    "headline": "Your trusted place for global and local merchants wines, spirits, rare finds, collectibles and gifts. Search and buy what you want. Buyers pay zero commissions",
+    "welcome": "Welcome to WineBloom",
+    "headline": "Your trusted place for global and local merchants wines, flowers, spirits, rare finds, collectibles and gifts. Search and buy what you want. Buyers pay zero commissions",
     "searchPlaceholder": "Search Riesling, Speyside, Pauillac…",
     "searchCta": "Search bottles",
-    "freshTitle": "Fresh from the cellar",
+    "freshTitle": "Discover bottles worth celebrating",
     "freshSubtitle": "Fixed prices only. No auctions, no bidding.",
     "empty": "No listings yet. Run npm run db:seed or become a seller."
   },
@@ -74,7 +74,7 @@
     "forgotPassword": "Forgot password?",
     "newHere": "New here?",
     "createAccount": "Create an account",
-    "joinTitle": "Join WineTreff",
+    "joinTitle": "Join WineBloom",
     "joinHint": "Create a buyer account. You can enable selling afterward.",
     "name": "Name",
     "alreadyRegistered": "Already registered?",
@@ -97,14 +97,14 @@
   },
   "age": {
     "title": "Are you of legal age?",
-    "body": "You must be at least 18 years old to browse and purchase alcohol on WineTreff. By continuing you confirm you meet the legal drinking age in your country of residence.",
+    "body": "You must be at least 18 years old to browse and purchase alcohol on WineBloom. By continuing you confirm you meet the legal drinking age in your country of residence.",
     "confirm": "I am 18 or older — enter"
   },
   "listing": {
     "soldBy": "Sold by",
     "shipping": "Shipping {amount}",
     "taxesHint": "Taxes/duties shown at checkout when applicable",
-    "noBuyerFees": "Buyers pay no WineTreff commission or marketplace fees.",
+    "noBuyerFees": "Buyers pay no WineBloom commission or marketplace fees.",
     "yourTotal": "Your total today: {amount} (price + shipping)",
     "buyNow": "Buy now — fixed price",
     "signInToBuy": "Sign in to buy",
@@ -159,23 +159,24 @@
     "pendingReview": "Submit for review",
     "active": "Active (requires payouts)",
     "unlisted": "Unlisted",
-    "openShop": "Open your WineTreff shop",
-    "openShopHint": "You start on the free Starter plan (10% commission). Upgrade anytime. Buyers never pay WineTreff fees.",
+    "openShop": "Open your WineBloom shop",
+    "openShopHint": "You start on the free Starter plan (10% commission). Upgrade anytime. Buyers never pay WineBloom fees.",
     "shopName": "Shop name",
     "bio": "Bio",
     "country": "Country code",
     "createSeller": "Create seller account",
     "planTitle": "Plan & fees",
-    "planHint": "Hybrid subscription + commission. Payment-processing costs are deducted from your proceeds and shown separately from WineTreff commission. Buyers never pay marketplace fees.",
+    "planHint": "Hybrid subscription + commission. Payment-processing costs are deducted from your proceeds and shown separately from WineBloom commission. Buyers never pay marketplace fees.",
     "current": "Current",
     "switchTo": "Switch to {plan}",
-    "enterpriseContact": "Contact WineTreff admin for Enterprise onboarding.",
+    "enterpriseContact": "Contact WineBloom admin for Enterprise onboarding.",
     "settlementFormula": "Settlement formula",
-    "sellerHome": "Seller home"
+    "sellerHome": "Seller home",
+    "quantity": "Quantity"
   },
   "fees": {
     "title": "Fees",
-    "intro": "Clear rules for buyers and sellers. WineTreff does not charge buyers marketplace commissions, premiums, transaction fees, Buy Again fees, search fees, or basic AI fees.",
+    "intro": "Clear rules for buyers and sellers. WineBloom does not charge buyers marketplace commissions, premiums, transaction fees, Buy Again fees, search fees, or basic AI fees.",
     "buyersTitle": "What buyers pay",
     "buyerPrice": "Displayed product price",
     "buyerShipping": "Stated shipping",
@@ -185,7 +186,7 @@
     "monthly": "Monthly",
     "commission": "Commission",
     "processingTitle": "Payment processing",
-    "processingBody": "Deducted from seller proceeds and disclosed separately from WineTreff commission. Planning estimate: 2.5% + €0.25 per payment. The ledger records the payment provider’s actual charge after settlement.",
+    "processingBody": "Deducted from seller proceeds and disclosed separately from WineBloom commission. Planning estimate: 2.5% + €0.25 per payment. The ledger records the payment provider’s actual charge after settlement.",
     "negotiated": "3.5%–4.5% negotiated",
     "from": "from {amount}"
   },
@@ -197,7 +198,13 @@
     "noPurchases": "No purchases yet."
   },
   "metadata": {
-    "title": "WineTreff — Fine bottles, fixed price",
+    "title": "WineBloom — Fine bottles, fixed price",
     "description": "Marketplace for wines, spirits, rare bottles, and beverage collectibles. Buyers pay only the listed price, shipping, and applicable taxes."
+  },
+  "catalogImport": {
+    "title": "Bring My Catalog to WineBloom",
+    "entry": "Import existing products",
+    "onboarding": "Nothing publishes automatically. You remain responsible for product accuracy and authorized content. Alcohol products require seller and destination eligibility. Synchronization changes prices or inventory only when enabled.",
+    "languageNotice": "Catalog import tools are currently available in English."
   }
 }

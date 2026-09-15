@@ -19,7 +19,7 @@ function appUrl(): string {
 }
 
 export function emailFrom(): string {
-  return process.env.EMAIL_FROM || "WineTreff <onboarding@resend.dev>";
+  return process.env.EMAIL_FROM || "WineBloom <onboarding@resend.dev>";
 }
 
 export function isEmailConfigured(): boolean {
@@ -68,29 +68,29 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; i
 export function welcomeEmail(input: { name: string; email: string }) {
   const name = input.name.trim() || "there";
   const url = appUrl();
-  const subject = "Welcome to WineTreff — registration confirmed";
+  const subject = "Welcome to WineBloom — registration confirmed";
   const text = [
     `Hi ${name},`,
     ``,
-    `Welcome to WineTreff. Your account has been registered successfully.`,
+    `Welcome to WineBloom. Your account has been registered successfully.`,
     ``,
     `You can sign in any time at ${url}/login`,
     `Browse bottles at ${url}/search`,
     ``,
-    `Buyers never pay WineTreff marketplace commissions — only the listed price, shipping, and applicable taxes.`,
+    `Buyers never pay WineBloom marketplace commissions — only the listed price, shipping, and applicable taxes.`,
     ``,
     `Cheers,`,
-    `The WineTreff team`,
+    `The WineBloom team`,
   ].join("\n");
 
   const html = `
   <div style="font-family:Georgia,serif;background:#f3efe6;padding:32px;color:#14110f;">
     <div style="max-width:560px;margin:0 auto;background:#fffdf8;border:1px solid rgba(20,17,15,0.12);border-radius:16px;padding:28px;">
-      <p style="margin:0;font-size:28px;color:#1f3d32;">WineTreff</p>
+      <p style="margin:0;font-size:28px;color:#1f3d32;">WineBloom</p>
       <h1 style="margin:20px 0 12px;font-size:24px;">Registration confirmed</h1>
       <p style="line-height:1.55;color:#2c261f;">Hi ${escapeHtml(name)},</p>
       <p style="line-height:1.55;color:#2c261f;">
-        Welcome to WineTreff. Your account has been registered successfully.
+        Welcome to WineBloom. Your account has been registered successfully.
         You’re ready to explore fixed-price wines, spirits, and rare bottles.
       </p>
       <p style="margin:24px 0;">
@@ -99,9 +99,9 @@ export function welcomeEmail(input: { name: string; email: string }) {
         </a>
       </p>
       <p style="line-height:1.55;color:#2c261f;font-size:14px;">
-        Buyers never pay WineTreff marketplace commissions — only the listed price, shipping, and applicable taxes.
+        Buyers never pay WineBloom marketplace commissions — only the listed price, shipping, and applicable taxes.
       </p>
-      <p style="margin-top:28px;color:#2c261f;">Cheers,<br/>The WineTreff team</p>
+      <p style="margin-top:28px;color:#2c261f;">Cheers,<br/>The WineBloom team</p>
     </div>
   </div>`.trim();
 
@@ -114,27 +114,27 @@ export function passwordResetEmail(input: {
   resetUrl: string;
 }) {
   const name = input.name.trim() || "there";
-  const subject = "Reset your WineTreff password";
+  const subject = "Reset your WineBloom password";
   const text = [
     `Hi ${name},`,
     ``,
-    `We received a request to reset your WineTreff password.`,
+    `We received a request to reset your WineBloom password.`,
     `Open this link within 1 hour to choose a new password:`,
     input.resetUrl,
     ``,
     `If you did not request this, you can ignore this email.`,
     ``,
-    `— WineTreff`,
+    `— WineBloom`,
   ].join("\n");
 
   const html = `
   <div style="font-family:Georgia,serif;background:#f3efe6;padding:32px;color:#14110f;">
     <div style="max-width:560px;margin:0 auto;background:#fffdf8;border:1px solid rgba(20,17,15,0.12);border-radius:16px;padding:28px;">
-      <p style="margin:0;font-size:28px;color:#1f3d32;">WineTreff</p>
+      <p style="margin:0;font-size:28px;color:#1f3d32;">WineBloom</p>
       <h1 style="margin:20px 0 12px;font-size:24px;">Reset your password</h1>
       <p style="line-height:1.55;color:#2c261f;">Hi ${escapeHtml(name)},</p>
       <p style="line-height:1.55;color:#2c261f;">
-        We received a request to reset your WineTreff password. This link expires in 1 hour.
+        We received a request to reset your WineBloom password. This link expires in 1 hour.
       </p>
       <p style="margin:24px 0;">
         <a href="${escapeHtml(input.resetUrl)}" style="display:inline-block;background:#1f3d32;color:#f3efe6;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:600;">

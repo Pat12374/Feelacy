@@ -65,7 +65,7 @@ export default async function OrderPage({
           <h2 className="font-display text-xl">Buyer receipt</h2>
           <p className="mt-2 text-sm text-[var(--ink-soft)]">
             Buyers pay only product price, shipping, and applicable taxes — never
-            WineTreff commissions.
+            WineBloom commissions.
           </p>
           <ul className="mt-4 space-y-2 text-sm">
             {order.items.map((item) => (
@@ -103,7 +103,7 @@ export default async function OrderPage({
               </li>
               <li className="flex justify-between gap-4">
                 <span>
-                  WineTreff commission (
+                  WineBloom commission (
                   {formatBpsAsPercent(order.settlement.commissionBps)})
                 </span>
                 <span>
@@ -139,14 +139,14 @@ export default async function OrderPage({
 
       {order.delivery && (
         <section className="mt-6 rounded-2xl border border-[var(--line)] bg-white/50 p-6" aria-labelledby="delivery-status">
-          <p className="text-xs uppercase tracking-[.16em] text-[var(--copper)]">WineTreff Express</p>
+          <p className="text-xs uppercase tracking-[.16em] text-[var(--copper)]">WineBloom Express</p>
           <h2 id="delivery-status" className="mt-1 font-display text-2xl">{order.delivery.status.replaceAll("_", " ")}</h2>
           <p className="mt-2 text-sm text-[var(--ink-soft)]">The seller prepares this order and an approved third-party courier transports it. Arrival times are estimates until seller acceptance and courier confirmation.</p>
           {order.delivery.ageRestricted && <div className="mt-4 rounded-xl bg-[rgba(176,138,90,.15)] p-4 text-sm"><strong>Eligible recipient required.</strong> Someone eligible must be physically present with valid identification. This order cannot be left unattended and returns to the seller after a failed delivery.</div>}
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2"><div><dt className="font-semibold">Estimated arrival</dt><dd>{order.delivery.deliveryEta?.toLocaleString() ?? "Awaiting courier confirmation"}</dd></div><div><dt className="font-semibold">Tracking</dt><dd>{order.delivery.trackingUrl ? <a href={order.delivery.trackingUrl} className="underline" rel="noreferrer" target="_blank">Open courier tracking</a> : "Not assigned yet"}</dd></div></dl>
           {order.delivery.customerExplanation && <p className="mt-4 rounded-xl bg-[rgba(139,46,46,.1)] p-4 text-sm text-[var(--danger)]">{order.delivery.customerExplanation} Refund responsibility is pending support review.</p>}
           <ol className="mt-5 border-l border-[var(--line)] pl-5">{order.delivery.history.map(h=><li key={h.id} className="relative pb-4 text-sm"><span className="absolute -left-[1.45rem] top-1 h-2 w-2 rounded-full bg-[var(--bottle)]"/><span className="font-semibold">{h.toStatus.replaceAll("_", " ")}</span><span className="block text-[var(--ink-soft)]">{h.createdAt.toLocaleString()}</span></li>)}</ol>
-          <a className="wt-btn wt-btn-secondary mt-2" href="mailto:support@winetreff.com?subject=Delivery support">Contact WineTreff support</a>
+          <a className="wt-btn wt-btn-secondary mt-2" href="mailto:support@feelacy.com?subject=Delivery support">Contact WineBloom support</a>
         </section>
       )}
 
@@ -154,7 +154,7 @@ export default async function OrderPage({
         <section className="mt-6 rounded-2xl border border-[var(--line)] bg-white/50 p-6">
           <h2 className="font-display text-xl">Seller-managed shipping</h2>
           <p className="mt-2 text-sm text-[var(--ink-soft)]">
-            The seller—not WineTreff—is responsible for packing, dispatch,
+            The seller—not WineBloom—is responsible for packing, dispatch,
             tracking, delivery communication, and shipping compliance.
           </p>
           {order.shippedAt && (

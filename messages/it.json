@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "WineTreff",
+    "brand": "WineBloom",
     "search": "Cerca",
     "sell": "Vendi",
     "fees": "Commissioni",
@@ -29,11 +29,11 @@
     "becomeSeller": "Diventa venditore"
   },
   "footer": {
-    "tagline": "Marketplace a prezzo fisso per vini, distillati, bottiglie rare, pezzi da collezione e regali. Gli acquirenti non pagano mai commissioni WineTreff.",
-    "copyright": "© {year} WineTreff. Solo 18+. Bevi responsabilmente."
+    "tagline": "Marketplace a prezzo fisso per vini, distillati, bottiglie rare, pezzi da collezione e regali. Gli acquirenti non pagano mai commissioni WineBloom.",
+    "copyright": "© {year} WineBloom. Solo 18+. Bevi responsabilmente."
   },
   "home": {
-    "welcome": "Benvenuto su WineTreff",
+    "welcome": "Benvenuto su WineBloom",
     "headline": "Bottiglie a prezzo fisso da commercianti affidabili — vini, distillati, rarità, pezzi da collezione e regali. Ricerca prima, compra quello che vuoi, e gli acquirenti pagano zero commissioni.",
     "searchPlaceholder": "Cerca Riesling, Speyside, Pauillac…",
     "searchCta": "Cerca bottiglie",
@@ -74,7 +74,7 @@
     "forgotPassword": "Password dimenticata?",
     "newHere": "Nuovo qui?",
     "createAccount": "Crea un account",
-    "joinTitle": "Unisciti a WineTreff",
+    "joinTitle": "Unisciti a WineBloom",
     "joinHint": "Crea un account acquirente. Potrai vendere dopo.",
     "name": "Nome",
     "alreadyRegistered": "Già registrato?",
@@ -97,14 +97,14 @@
   },
   "age": {
     "title": "Hai l'età legale?",
-    "body": "Devi avere almeno 18 anni per navigare e acquistare alcol su WineTreff. Continuando confermi di rispettare l'età legale nel tuo paese.",
+    "body": "Devi avere almeno 18 anni per navigare e acquistare alcol su WineBloom. Continuando confermi di rispettare l'età legale nel tuo paese.",
     "confirm": "Ho 18 anni o più — entra"
   },
   "listing": {
     "soldBy": "Venduto da",
     "shipping": "Spedizione {amount}",
     "taxesHint": "Tasse/dazi mostrati al checkout quando applicabili",
-    "noBuyerFees": "Gli acquirenti non pagano commissioni o fee WineTreff.",
+    "noBuyerFees": "Gli acquirenti non pagano commissioni o fee WineBloom.",
     "yourTotal": "Il tuo totale oggi: {amount} (prezzo + spedizione)",
     "buyNow": "Acquista ora — prezzo fisso",
     "signInToBuy": "Accedi per acquistare",
@@ -159,23 +159,24 @@
     "pendingReview": "Invia in revisione",
     "active": "Attivo (richiede pagamenti)",
     "unlisted": "Non in elenco",
-    "openShop": "Apri il tuo negozio WineTreff",
-    "openShopHint": "Parti dal piano Starter gratuito (10% di commissione). Aggiorna quando vuoi. Gli acquirenti non pagano mai fee WineTreff.",
+    "openShop": "Apri il tuo negozio WineBloom",
+    "openShopHint": "Parti dal piano Starter gratuito (10% di commissione). Aggiorna quando vuoi. Gli acquirenti non pagano mai fee WineBloom.",
     "shopName": "Nome negozio",
     "bio": "Bio",
     "country": "Codice paese",
     "createSeller": "Crea account venditore",
     "planTitle": "Piano e fee",
-    "planHint": "Abbonamento ibrido + commissione. I costi di pagamento sono detratti dai proventi e mostrati separatamente dalla commissione WineTreff. Gli acquirenti non pagano mai fee marketplace.",
+    "planHint": "Abbonamento ibrido + commissione. I costi di pagamento sono detratti dai proventi e mostrati separatamente dalla commissione WineBloom. Gli acquirenti non pagano mai fee marketplace.",
     "current": "Attuale",
     "switchTo": "Passa a {plan}",
-    "enterpriseContact": "Contatta l'admin WineTreff per Enterprise.",
+    "enterpriseContact": "Contatta l'admin WineBloom per Enterprise.",
     "settlementFormula": "Formula di liquidazione",
-    "sellerHome": "Home venditore"
+    "sellerHome": "Home venditore",
+    "quantity": "Quantità"
   },
   "fees": {
     "title": "Commissioni",
-    "intro": "Regole chiare per acquirenti e venditori. WineTreff non addebita agli acquirenti commissioni, premi, fee di transazione o fee AI di base.",
+    "intro": "Regole chiare per acquirenti e venditori. WineBloom non addebita agli acquirenti commissioni, premi, fee di transazione o fee AI di base.",
     "buyersTitle": "Cosa pagano gli acquirenti",
     "buyerPrice": "Prezzo prodotto visualizzato",
     "buyerShipping": "Spedizione indicata",
@@ -185,7 +186,7 @@
     "monthly": "Mensile",
     "commission": "Commissione",
     "processingTitle": "Elaborazione pagamenti",
-    "processingBody": "Detta dai proventi del venditore e mostrata separatamente dalla commissione WineTreff. Stima: 2,5% + €0,25 per pagamento. Il ledger registra l'addebito reale del provider.",
+    "processingBody": "Detta dai proventi del venditore e mostrata separatamente dalla commissione WineBloom. Stima: 2,5% + €0,25 per pagamento. Il ledger registra l'addebito reale del provider.",
     "negotiated": "3,5%–4,5% negoziato",
     "from": "da {amount}"
   },
@@ -197,7 +198,7 @@
     "noPurchases": "Nessun acquisto ancora."
   },
   "metadata": {
-    "title": "WineTreff — Bottiglie pregiate, prezzo fisso",
+    "title": "WineBloom — Bottiglie pregiate, prezzo fisso",
     "description": "Marketplace per vini, distillati, bottiglie rare e collezionabili. Gli acquirenti pagano solo prezzo, spedizione e tasse applicabili."
   }
 }

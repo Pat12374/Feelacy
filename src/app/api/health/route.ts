@@ -28,5 +28,5 @@ export async function GET() {
     return NextResponse.json({ ...checks, ok: false }, { status: 503 });
   }
 
-  return NextResponse.json(checks);
+  return NextResponse.json(isProduction() ? { ok: true } : checks);
 }

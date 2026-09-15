@@ -1,4 +1,4 @@
-/** WineTreff commerce fee rules — see docs/FEES.md */
+/** WineBloom commerce fee rules — see docs/FEES.md */
 
 export const PROCESSOR_FEE_RATE = 0.025;
 export const PROCESSOR_FEE_FIXED_CENTS = 25;
@@ -42,7 +42,7 @@ export function commissionCents(
   return Math.round((productSubtotalCents * commissionBps) / 10000);
 }
 
-/** Buyers never pay WineTreff commission or processor fees */
+/** Buyers never pay WineBloom commission or processor fees */
 export function buyerTotalCents(input: {
   productSubtotalCents: number;
   shippingCents: number;
